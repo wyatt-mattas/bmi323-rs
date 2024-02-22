@@ -226,6 +226,7 @@ pub const BMI3_GYR_MODE_HIGH_PERF: u8 = 0x07;
 
 // Gyroscope bandwidth
 pub const BMI3_GYR_BW_ODR_HALF: u8 = 0;
+pub const BMI3_GYR_BW_ODR_QUARTER: u8 = 0;
 
 //Bit wise to define information
 pub const BMI3_I_MIN_VALUE: u8 = 1;
@@ -270,3 +271,38 @@ pub const BMI3_ACC_MODE_HIGH_PERF: u8 = 0x07;
 // Accelerometer bandwidth
 pub const BMI3_ACC_BW_ODR_HALF: u8 = 0;
 pub const BMI3_ACC_BW_ODR_QUARTER: u8 = 1;
+
+pub const BMI3_REG_INT_STATUS_INT1: u8 = 0x0D;
+pub const BMI3_REG_INT_STATUS_INT2: u8 = 0x0E;
+
+pub const BMI3_INT_STATUS_GYR_DRDY: u16 = 0x1000;
+
+pub const BMI3_SATF_ACC_X_MASK: u16 = 0x0001;
+
+// Saturation flag for accel Y axis
+pub const BMI3_SATF_ACC_Y_MASK: u16 = 0x0002;
+pub const BMI3_SATF_ACC_Y_POS: u8 = 1;
+
+// Saturation flag for accel Z axis
+pub const BMI3_SATF_ACC_Z_MASK: u16 = 0x0004;
+pub const BMI3_SATF_ACC_Z_POS: u8 = 2;
+
+// Saturation flag for gyro X axis
+pub const BMI3_SATF_GYR_X_MASK: u16 = 0x0008;
+pub const BMI3_SATF_GYR_X_POS: u8 = 3;
+
+// Saturation flag for gyro Y axis
+pub const BMI3_SATF_GYR_Y_MASK: u16 = 0x0010;
+pub const BMI3_SATF_GYR_Y_POS: u8 = 4;
+
+// Saturation flag for gyro Z axis
+pub const BMI3_SATF_GYR_Z_MASK: u16 = 0x0020;
+pub const BMI3_SATF_GYR_Z_POS: u8 = 5;
+
+pub const BMI3_ACC_NUM_BYTES: u8 = 20;
+pub const BMI3_GYR_NUM_BYTES: u8 = 14;
+
+pub const BMI3_REG_GYR_DATA_X: u8 = 0x06;
+
+pub const BMI323_CHIP_ID: u16 = 0x0043;
+pub const BMI3_16_BIT_RESOLUTION: u8 = 16;

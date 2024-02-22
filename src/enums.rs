@@ -32,18 +32,25 @@ pub enum Bmi3Intf {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Bmi3Error {
-    NullPtr = -1,
-    ComFail = -2,
-    DevNotFound = -3,
-    AccInvalidCfg = -4,
-    GyroInvalidCfg = -5,
-    InvalidSensor = -6,
-    InvalidIntPin = -7,
-    InvalidInput = -8,
-    InvalidStatus = -9,
-    DataRdyIntFailed = -10,
-    InvalidFocPosition = -11,
-    InvalidStSelection = -12,
-    OutOfRange = -13,
-    FeatureEngineStatus = -14,
+    NullPtr,
+    ComFail,
+    DevNotFound,
+    AccInvalidCfg,
+    GyroInvalidCfg,
+    InvalidSensor,
+    InvalidIntPin,
+    InvalidInput,
+    InvalidStatus,
+    DataRdyIntFailed,
+    InvalidFocPosition,
+    InvalidStSelection,
+    OutOfRange,
+    FeatureEngineStatus,
+}
+#[derive(Debug, PartialEq, Eq)]
+pub enum I2cError {
+    NullPtr,
+    ComFail,
+    NackReceived,
+    InitializationError,
 }

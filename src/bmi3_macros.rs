@@ -20,3 +20,26 @@ macro_rules! set_bits {
         $reg_data[$idx] = (temp >> $shift) as u8;
     }};
 }
+
+// #[macro_export]
+// macro_rules! check_boundary_val {
+//     ($self:expr, $val:expr, $min:expr, $max:expr, $min_flag:expr, $max_flag:expr) => {{
+//         |val: Option<&mut u8>, min: u8, max: u8| -> Bmi3Result<()> {
+//             if let Some(v) = val {
+//                 if *v < min {
+//                     *v = min;
+//                     $self.info |= $min_flag; // Use passed flag for min value
+//                 }
+
+//                 if *v > max {
+//                     *v = max;
+//                     $self.info |= $max_flag; // Use passed flag for max value
+//                 }
+
+//                 Ok(())
+//             } else {
+//                 Err(Bmi3Error::NullPtr)
+//             }
+//         }($val, $min, $max)
+//     }};
+// }
