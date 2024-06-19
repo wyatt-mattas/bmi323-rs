@@ -1,4 +1,4 @@
-use crate::{bmi3_defs::*, bmi3dev::Bmi3Dev, enums::Bmi3Error};
+use crate::{bmi3_defs::*, bmi3dev::Bmi3Dev, enums::Bmi3Error, from_reg_data};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct Bmi3SensAxesData {
@@ -13,7 +13,7 @@ pub struct Bmi3SensAxesData {
 
 impl Bmi3SensAxesData {
     pub fn default() -> Self {
-        Bmi3SensAxesData{
+        Bmi3SensAxesData {
             x: 0,
             y: 0,
             z: 0,
@@ -24,38 +24,28 @@ impl Bmi3SensAxesData {
         }
     }
 
-    fn from_acc_reg_data(reg_data: &[u16]) -> Self {
-        Self {
-            x: reg_data[0] as i16,
-            y: reg_data[1] as i16,
-            z: reg_data[2] as i16,
-            sens_time: reg_data[3] as u32 | ((reg_data[4] as u32) << 16),
-            sat_x: reg_data[5] as u8 & BMI3_SATF_ACC_X_MASK as u8,
-            sat_y: (reg_data[5] as u8 & BMI3_SATF_ACC_Y_MASK as u8) >> BMI3_SATF_ACC_Y_POS,
-            sat_z: (reg_data[5] as u8 & BMI3_SATF_ACC_Z_MASK as u8) >> BMI3_SATF_ACC_Z_POS,
-        }
-    }
-
-    fn from_gyro_reg_data(reg_data: &[u16]) -> Self {
-        // Assuming get_gyr_data is similar to get_acc_data but tailored for gyroscope data
-        // This function would similarly translate gyro data from register values
-        // Implementation would be analogous to from_acc_reg_data, adjusted for gyro specifics
-        Self {
-            x: reg_data[0] as i16,
-            y: reg_data[1] as i16,
-            z: reg_data[2] as i16,
-            sens_time: reg_data[3] as u32 | ((reg_data[4] as u32) << 16),
-            sat_x: reg_data[5] as u8 & BMI3_SATF_GYR_X_MASK as u8,
-            sat_y: (reg_data[5] as u8 & BMI3_SATF_GYR_Y_MASK as u8) >> BMI3_SATF_GYR_Y_POS,
-            sat_z: (reg_data[5] as u8 & BMI3_SATF_GYR_Z_MASK as u8) >> BMI3_SATF_GYR_Z_POS,
-        }
-    }
+    from_reg_data!(
+        from_acc_reg_data,
+        BMI3_SATF_ACC_X_MASK,
+        BMI3_SATF_ACC_Y_MASK,
+        BMI3_SATF_ACC_Y_POS,
+        BMI3_SATF_ACC_Z_MASK,
+        BMI3_SATF_ACC_Z_POS
+    );
+    from_reg_data!(
+        from_gyro_reg_data,
+        BMI3_SATF_GYR_X_MASK,
+        BMI3_SATF_GYR_Y_MASK,
+        BMI3_SATF_GYR_Y_POS,
+        BMI3_SATF_GYR_Z_MASK,
+        BMI3_SATF_GYR_Z_POS
+    );
 }
 
 impl Bmi3Dev {
     // Assuming Bmi3Dev and bmi3_get_regs are defined elsewhere
 
-    fn get_accel_sensor_data(&mut self, reg_addr: u8) -> Result<Bmi3SensAxesData, Bmi3Error> {
+    pub fn get_accel_sensor_data(&mut self, reg_addr: u8) -> Result<Bmi3SensAxesData, Bmi3Error> {
         let mut reg_data = [0u8; BMI3_ACC_NUM_BYTES as usize]; // Define BMI3_ACC_NUM_BYTES accordingly
 
         // Simulate reading from the device
@@ -72,8 +62,8 @@ impl Bmi3Dev {
                     reg_data[18] as u16,
                 ];
                 Ok(Bmi3SensAxesData::from_acc_reg_data(&acc_data))
-            },
-            Err(_) => Err(Bmi3Error::NullPtr)
+            }
+            Err(_) => Err(Bmi3Error::NullPtr),
         }
     }
 
@@ -94,7 +84,7 @@ impl Bmi3Dev {
                     reg_data[12] as u16,
                 ];
                 Ok(Bmi3SensAxesData::from_gyro_reg_data(&gyr_data))
-            },
+            }
             Err(_) => Err(Bmi3Error::NullPtr),
         }
     }

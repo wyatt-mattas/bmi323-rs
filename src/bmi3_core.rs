@@ -1,10 +1,11 @@
+use crate::bmi3_defs::*;
 use crate::bmi3_types::Bmi3Result;
 use crate::bmi3dev::Bmi3Dev;
-use crate::bmi3_defs::*;
 use crate::enums::{Bmi3Error, Bmi3Intf};
 // use core::usize;
 
 impl Bmi3Dev {
+    // TODO don't need this with embedded_hal
     pub fn null_ptr_check(&self) -> Bmi3Result<()> {
         if self.read.is_none() || self.write.is_none() || self.delay_us.is_none() {
             Err(Bmi3Error::NullPtr)
@@ -117,18 +118,18 @@ impl Bmi3Dev {
 
     pub fn check_boundary_val(&mut self, val: Option<&mut u8>, min: u8, max: u8) -> Bmi3Result<()> {
         self.null_ptr_check()?;
-    
+
         if let Some(v) = val {
             if *v < min {
                 *v = min;
                 self.info |= BMI3_I_MIN_VALUE; // Assuming these are predefined bit flags
             }
-    
+
             if *v > max {
                 *v = max;
                 self.info |= BMI3_I_MAX_VALUE;
             }
-    
+
             Ok(())
         } else {
             Err(Bmi3Error::NullPtr)

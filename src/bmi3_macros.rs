@@ -21,6 +21,23 @@ macro_rules! set_bits {
     }};
 }
 
+#[macro_export]
+macro_rules! from_reg_data {
+    ($name:ident, $x_mask:expr, $y_mask:expr, $y_pos:expr, $z_mask:expr, $z_pos:expr) => {
+        fn $name(reg_data: &[u16]) -> Self {
+            Self {
+                x: reg_data[0] as i16,
+                y: reg_data[1] as i16,
+                z: reg_data[2] as i16,
+                sens_time: reg_data[3] as u32 | ((reg_data[4] as u32) << 16),
+                sat_x: reg_data[5] as u8 & $x_mask as u8,
+                sat_y: (reg_data[5] as u8 & $y_mask as u8) >> $y_pos,
+                sat_z: (reg_data[5] as u8 & $z_mask as u8) >> $z_pos,
+            }
+        }
+    };
+}
+
 // #[macro_export]
 // macro_rules! check_boundary_val {
 //     ($self:expr, $val:expr, $min:expr, $max:expr, $min_flag:expr, $max_flag:expr) => {{
