@@ -1,16 +1,10 @@
 // device.rs
 
 use crate::{
-    error::Error,
     interface::{I2cInterface, ReadData, SpiInterface, WriteData},
-    types::{AccelerometerRange, GyroscopeRange, Register},
+    types::{AccelerometerRange, GyroscopeRange},
+    Bmi323, Error, Register,
 };
-
-pub struct Bmi323<DI> {
-    iface: DI,
-    accel_range: AccelerometerRange,
-    gyro_range: GyroscopeRange,
-}
 
 impl<I2C> Bmi323<I2cInterface<I2C>> {
     pub fn new_with_i2c(i2c: I2C, address: u8) -> Self {

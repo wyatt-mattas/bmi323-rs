@@ -1,6 +1,6 @@
 // interface.rs
 
-use crate::error::Error;
+use crate::Error;
 use embedded_hal::{i2c, spi::SpiDevice};
 
 #[derive(Debug)]
