@@ -1,7 +1,8 @@
 #[derive(Debug)]
 pub enum Error<E> {
     Comm(E),
-    Other,
+    InvalidDevice,
+    InvalidConfig,
 }
 
 /// Sensor power mode
@@ -28,25 +29,34 @@ pub enum AccelerometerPowerMode {
 
 // TODO update these with either Register values or hex values
 /// Accelerometer Range
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AccelerometerRange {
-    /// +- 2G
-    #[default]
-    G2 = 0b0000_0011,
-    /// +- 4G
-    G4 = 0b0000_0101,
-    /// +- 8G
-    G8 = 0b0000_1000,
+    G2,
+    G4,
+    G8,
+    G16,
 }
 
 impl AccelerometerRange {
-    pub(crate) fn multiplier(self) -> f32 {
+    pub fn to_g(&self) -> f32 {
         match self {
-            AccelerometerRange::G2 => 1. / 16384.,
-            AccelerometerRange::G4 => 1. / 8192.,
-            AccelerometerRange::G8 => 1. / 4096.,
+            AccelerometerRange::G2 => 2.0,
+            AccelerometerRange::G4 => 4.0,
+            AccelerometerRange::G8 => 8.0,
+            AccelerometerRange::G16 => 16.0,
         }
+    }
+}
+
+impl Default for AccelerometerRange {
+    fn default() -> Self {
+        AccelerometerRange::G8
+    }
+}
+
+impl AccelerometerRange {
+    pub fn bits(self) -> u8 {
+        self as u8
     }
 }
 
@@ -62,33 +72,36 @@ pub enum GyroscopePowerMode {
     FastStartUp,
 }
 
-// TODO update these with either Register values or hex values
-/// Gyroscope range
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GyroscopeRange {
-    /// 16.4 LSB/°/s <-> 61.0 m°/s / LSB
-    #[default]
-    Scale2000 = 0b0000_0000,
-    /// 32.8 LSB/°/s <-> 30.5 m°/s / LSB
-    Scale1000 = 0b0000_0001,
-    /// 65.6 LSB/°/s <-> 15.3 m°/s / LSB
-    Scale500 = 0b0000_0010,
-    /// 131.2 LSB/°/s <-> 7.6 m°/s / LSB
-    Scale250 = 0b0000_0011,
-    /// 262.4 LSB/°/s  3.8m°/s / LSB
-    Scale125 = 0b0000_0100,
+    DPS125,
+    DPS250,
+    DPS500,
+    DPS1000,
+    DPS2000,
 }
 
 impl GyroscopeRange {
-    pub(crate) fn multiplier(self) -> f32 {
+    pub fn to_dps(&self) -> f32 {
         match self {
-            GyroscopeRange::Scale2000 => 1. / 16.4,
-            GyroscopeRange::Scale1000 => 1. / 32.8,
-            GyroscopeRange::Scale500 => 1. / 65.6,
-            GyroscopeRange::Scale250 => 1. / 131.2,
-            GyroscopeRange::Scale125 => 1. / 262.4,
+            GyroscopeRange::DPS125 => 125.0,
+            GyroscopeRange::DPS250 => 250.0,
+            GyroscopeRange::DPS500 => 500.0,
+            GyroscopeRange::DPS1000 => 1000.0,
+            GyroscopeRange::DPS2000 => 2000.0,
         }
+    }
+}
+
+impl Default for GyroscopeRange {
+    fn default() -> Self {
+        GyroscopeRange::DPS2000
+    }
+}
+
+impl GyroscopeRange {
+    pub fn bits(self) -> u8 {
+        self as u8
     }
 }
 
