@@ -26,7 +26,7 @@ impl<const N: u8> AccelerometerData<N> {
     }
 
     pub fn lsb_to_mps2(val: i16, g: f32) -> f32 {
-        (GRAVITY * val as f32 * g) / Self::half_scale()
+        (val as f32 * g * GRAVITY) / Self::half_scale()
     }
 }
 

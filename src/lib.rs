@@ -35,7 +35,7 @@ pub struct GyroscopeConfig {
     pub mode: u8,
 }
 
-pub struct AccelerometerData {
+/*pub struct AccelerometerData {
     pub x: i16,
     pub y: i16,
     pub z: i16,
@@ -45,7 +45,7 @@ pub struct GyroscopeData {
     pub x: i16,
     pub y: i16,
     pub z: i16,
-}
+    }*/
 
 impl AccelerometerConfig {
     pub fn default() -> Self {
