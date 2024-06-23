@@ -1,5 +1,3 @@
-// interface.rs
-
 use crate::Error;
 use embedded_hal::{i2c, spi::SpiDevice};
 
