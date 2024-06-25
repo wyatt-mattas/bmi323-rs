@@ -9,3 +9,4 @@ edition = "2021"
 defmt = { version = "0.3.8", optional = true }
 embedded-hal = "1.0.0"
 embedded-hal-mock = { version = "0.11.1", features = ["eh1"] }
+micromath = "2.1.0"

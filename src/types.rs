@@ -1,3 +1,6 @@
+use core::fmt::Debug;
+use micromath::F32Ext;
+
 #[derive(Debug)]
 pub enum Error<E> {
     Comm(E),
@@ -5,46 +8,32 @@ pub enum Error<E> {
     InvalidConfig,
 }
 
-/// Sensor power mode
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct SensorPowerMode {
-    /// Accelerometer power mode
     pub accel: AccelerometerPowerMode,
-    /// Gyroscope power mode
     pub gyro: GyroscopePowerMode,
 }
 
-/// Accelerometer power mode
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum AccelerometerPowerMode {
-    /// Normal mode
     Normal,
-    /// Suspend mode
     Suspend,
-    /// Low power mode
     LowPower,
 }
 
-// TODO update these with either Register values or hex values
-/// Accelerometer Range
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AccelerometerRange {
-    G2,
-    G4,
-    G8,
-    G16,
+    G2 = 0,
+    G4 = 1,
+    G8 = 2,
+    G16 = 3,
 }
 
 impl AccelerometerRange {
-    pub fn to_g(&self) -> f32 {
-        match self {
-            AccelerometerRange::G2 => 2.0,
-            AccelerometerRange::G4 => 4.0,
-            AccelerometerRange::G8 => 8.0,
-            AccelerometerRange::G16 => 16.0,
-        }
+    pub fn to_g(self) -> f32 {
+        2.0f32.powi(self as i32 + 1)
     }
 }
 
@@ -54,42 +43,26 @@ impl Default for AccelerometerRange {
     }
 }
 
-impl AccelerometerRange {
-    pub fn bits(self) -> u8 {
-        self as u8
-    }
-}
-
-/// Gyroscope power mode
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum GyroscopePowerMode {
-    /// Normal mode
     Normal,
-    /// Suspend mode
     Suspend,
-    /// Fast start-up mode
     FastStartUp,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GyroscopeRange {
-    DPS125,
-    DPS250,
-    DPS500,
-    DPS1000,
-    DPS2000,
+    DPS125 = 0,
+    DPS250 = 1,
+    DPS500 = 2,
+    DPS1000 = 3,
+    DPS2000 = 4,
 }
 
 impl GyroscopeRange {
-    pub fn to_dps(&self) -> f32 {
-        match self {
-            GyroscopeRange::DPS125 => 125.0,
-            GyroscopeRange::DPS250 => 250.0,
-            GyroscopeRange::DPS500 => 500.0,
-            GyroscopeRange::DPS1000 => 1000.0,
-            GyroscopeRange::DPS2000 => 2000.0,
-        }
+    pub fn to_dps(self) -> f32 {
+        125.0 * 2.0f32.powi(self as i32)
     }
 }
 
@@ -99,30 +72,17 @@ impl Default for GyroscopeRange {
     }
 }
 
-impl GyroscopeRange {
-    pub fn bits(self) -> u8 {
-        self as u8
-    }
-}
-
-/// Sensor status flags
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Status {
-    /// Accelerometer has data ready
     pub accel_data_ready: bool,
-    /// Gyroscope has data ready
     pub gyro_data_ready: bool,
-    /// NVM controller ready
     pub nvm_ready: bool,
-    /// Fast offset compensation (FOC) completed
     pub foc_ready: bool,
-    /// Gyroscope self-test completed successfully
     pub gyro_self_test_ok: bool,
 }
 
-/// Sensor data read selector
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct SensorSelector {
     pub(crate) accel: bool,
@@ -131,38 +91,27 @@ pub struct SensorSelector {
 }
 
 impl SensorSelector {
-    /// Create new instance of the selector.
-    ///
-    /// This does not include any data.
     pub fn new() -> Self {
-        SensorSelector {
-            accel: false,
-            gyro: false,
-            time: false,
-        }
+        Self::default()
     }
 
-    /// Include acceleration sensor data
     pub fn accel(mut self) -> Self {
         self.accel = true;
         self
     }
 
-    /// Include gyroscope sensor data
     pub fn gyro(mut self) -> Self {
         self.gyro = true;
         self
     }
 
-    /// Include sensor time
     pub fn time(mut self) -> Self {
         self.time = true;
         self
     }
 
-    /// Include accelerometer, gyroscope, magnetometer and time data
     pub fn all() -> Self {
-        SensorSelector {
+        Self {
             accel: true,
             gyro: true,
             time: true,
@@ -170,56 +119,71 @@ impl SensorSelector {
     }
 }
 
-impl Default for SensorSelector {
-    fn default() -> Self {
-        SensorSelector::all()
-    }
-}
-
-/// Sensor data read selector
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Sensor3DData {
-    /// X axis data
     pub x: i16,
-    /// Y axis data
     pub y: i16,
-    /// Z axis data
     pub z: i16,
 }
 
-/// Sensor data read
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Data {
-    /// Accelerometer data (if selected)
     pub accel: Option<Sensor3DData>,
-    /// Gyroscope data (if selected)
     pub gyro: Option<Sensor3DData>,
-    /// Time data (if selected)
     pub time: Option<u32>,
 }
 
-/// Floating point 3D data
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Sensor3DDataScaled {
-    /// X axis data
     pub x: f32,
-    /// Y axis data
     pub y: f32,
-    /// Z axis data
     pub z: f32,
 }
 
-/// Sensor data read
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct DataScaled {
-    /// Accelerometer data (if selected)
     pub accel: Option<Sensor3DDataScaled>,
-    /// Gyroscope data (if selected)
     pub gyro: Option<Sensor3DDataScaled>,
-    /// Time data (if selected)
     pub time: Option<u32>,
+}
+
+impl From<AccelerometerRange> for u8 {
+    fn from(range: AccelerometerRange) -> Self {
+        range as u8
+    }
+}
+
+impl From<GyroscopeRange> for u8 {
+    fn from(range: GyroscopeRange) -> Self {
+        range as u8
+    }
+}
+
+impl AccelerometerRange {
+    pub fn from_u8(value: u8) -> Self {
+        match value {
+            0 => AccelerometerRange::G2,
+            1 => AccelerometerRange::G4,
+            2 => AccelerometerRange::G8,
+            3 => AccelerometerRange::G16,
+            _ => AccelerometerRange::G8, // Default to G8 for invalid values
+        }
+    }
+}
+
+impl GyroscopeRange {
+    pub fn from_u8(value: u8) -> Self {
+        match value {
+            0 => GyroscopeRange::DPS125,
+            1 => GyroscopeRange::DPS250,
+            2 => GyroscopeRange::DPS500,
+            3 => GyroscopeRange::DPS1000,
+            4 => GyroscopeRange::DPS2000,
+            _ => GyroscopeRange::DPS2000, // Default to DPS2000 for invalid values
+        }
+    }
 }

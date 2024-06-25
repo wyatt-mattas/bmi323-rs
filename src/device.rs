@@ -1,9 +1,7 @@
-// device.rs
 use crate::{
     interface::{I2cInterface, ReadData, SpiInterface, WriteData},
-    sensor_data::*,
-    types::{AccelerometerRange, GyroscopeRange},
-    AccelerometerConfig, Bmi323, Error, GyroscopeConfig, Register,
+    types::{AccelerometerRange, GyroscopeRange, Sensor3DData, Sensor3DDataScaled},
+    Bmi323, Error, Register, SensorConfig,
 };
 use embedded_hal::delay::DelayNs;
 
@@ -41,7 +39,7 @@ where
     D: DelayNs,
 {
     pub fn new(iface: DI, delay: D) -> Self {
-        Bmi323 {
+        Self {
             iface,
             delay,
             accel_range: AccelerometerRange::default(),
@@ -50,73 +48,81 @@ where
     }
 
     pub fn init(&mut self) -> Result<(), Error<E>> {
-        // Perform soft reset
         self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
-        self.delay_ms(1);
+        self.delay.delay_ms(1);
 
-        // Check chip ID
         let chip_id = self.read_register(Register::CHIPID)?;
         if chip_id != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
         }
 
-        // Configure default settings
-        self.set_accel_config(AccelerometerConfig::default())?;
-        self.set_gyro_config(GyroscopeConfig::default())?;
+        self.set_sensor_config(Register::ACC_CONF, SensorConfig::default())?;
+        self.set_sensor_config(Register::GYR_CONF, SensorConfig::default())?;
 
         Ok(())
     }
 
-    pub fn set_accel_config(&mut self, config: AccelerometerConfig) -> Result<(), Error<E>> {
-        let mut reg_data = [0u8; 2];
-        reg_data[0] = config.odr | (config.range.bits() << 4) | (config.bw << 7);
-        reg_data[1] = config.avg_num | (config.mode << 4);
-        self.write_register(Register::ACC_CONF, reg_data[0])?;
-        self.write_register(Register::ACC_CONF + 1, reg_data[1])?;
-        self.accel_range = config.range;
+    pub fn set_sensor_config(
+        &mut self,
+        base_reg: u8,
+        config: SensorConfig,
+    ) -> Result<(), Error<E>> {
+        let reg_data = [
+            config.odr | (config.range << 4) | (config.bw << 7),
+            config.avg_num | (config.mode << 4),
+        ];
+        self.write_register(base_reg, reg_data[0])?;
+        self.write_register(base_reg + 1, reg_data[1])?;
+
+        if base_reg == Register::ACC_CONF {
+            self.accel_range = AccelerometerRange::from_u8(config.range);
+        } else if base_reg == Register::GYR_CONF {
+            self.gyro_range = GyroscopeRange::from_u8(config.range);
+        }
+
         Ok(())
     }
 
-    pub fn set_gyro_config(&mut self, config: GyroscopeConfig) -> Result<(), Error<E>> {
-        let mut reg_data = [0u8; 2];
-        reg_data[0] = config.odr | (config.range.bits() << 4) | (config.bw << 7);
-        reg_data[1] = config.avg_num | (config.mode << 4);
-        self.write_register(Register::GYR_CONF, reg_data[0])?;
-        self.write_register(Register::GYR_CONF + 1, reg_data[1])?;
-        self.gyro_range = config.range;
-        Ok(())
-    }
-
-    pub fn read_accel_data(&mut self) -> Result<AccelerometerData<16>, Error<E>> {
+    pub fn read_sensor_data(&mut self, base_reg: u8) -> Result<Sensor3DData, Error<E>> {
         let mut data = [0u8; 6];
+        self.read_data(&mut [base_reg, 0, 0, 0, 0, 0, 0])?;
         self.read_data(&mut data)?;
-        Ok(AccelerometerData {
+        Ok(Sensor3DData {
             x: i16::from_le_bytes([data[0], data[1]]),
             y: i16::from_le_bytes([data[2], data[3]]),
             z: i16::from_le_bytes([data[4], data[5]]),
         })
     }
 
-    pub fn read_gyro_data(&mut self) -> Result<GyroscopeData<16>, Error<E>> {
-        let mut data = [0u8; 6];
-        self.read_data(&mut data)?;
-        Ok(GyroscopeData {
-            x: i16::from_le_bytes([data[0], data[1]]),
-            y: i16::from_le_bytes([data[2], data[3]]),
-            z: i16::from_le_bytes([data[4], data[5]]),
-        })
+    pub fn read_accel_data(&mut self) -> Result<Sensor3DData, Error<E>> {
+        self.read_sensor_data(Register::ACC_DATA_X)
     }
 
-    pub fn read_accel_data_scaled(&mut self) -> Result<AccelerometerDataScaled, Error<E>> {
+    pub fn read_gyro_data(&mut self) -> Result<Sensor3DData, Error<E>> {
+        self.read_sensor_data(Register::GYR_DATA_X)
+    }
+
+    pub fn read_accel_data_scaled(&mut self) -> Result<Sensor3DDataScaled, Error<E>> {
         let raw_data = self.read_accel_data()?;
-        let g = self.accel_range.to_g();
-        Ok(raw_data.to_mps2(g))
+        Ok(raw_data.to_mps2(self.accel_range.to_g())) // Assuming 16-bit width
     }
 
-    pub fn read_gyro_data_scaled(&mut self) -> Result<GyroscopeDataScaled, Error<E>> {
+    pub fn read_gyro_data_scaled(&mut self) -> Result<Sensor3DDataScaled, Error<E>> {
         let raw_data = self.read_gyro_data()?;
-        let dps = self.gyro_range.to_dps();
-        Ok(raw_data.to_dps(dps))
+        Ok(raw_data.to_dps(self.gyro_range.to_dps())) // Assuming 16-bit width
+    }
+
+    pub fn read_temperature(&mut self) -> Result<f32, Error<E>> {
+        let mut data = [0u8; 2];
+        self.read_data(&mut data)?;
+        let raw_temp = i16::from_le_bytes([data[0], data[1]]);
+        Ok((raw_temp as f32 / 512.0) + 23.0)
+    }
+
+    pub fn read_sensor_time(&mut self) -> Result<u32, Error<E>> {
+        let mut data = [0u8; 3];
+        self.read_data(&mut data)?;
+        Ok(u32::from_le_bytes([data[0], data[1], data[2], 0]))
     }
 
     fn write_register(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
@@ -134,9 +140,5 @@ where
 
     fn read_data(&mut self, data: &mut [u8]) -> Result<(), Error<E>> {
         self.iface.read_data(data)
-    }
-
-    fn delay_ms(&mut self, ms: u32) {
-        self.delay.delay_ms(ms);
     }
 }
