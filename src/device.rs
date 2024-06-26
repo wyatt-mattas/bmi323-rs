@@ -96,13 +96,14 @@ where
     }
 
     pub fn read_sensor_data(&mut self, base_reg: u8) -> Result<Sensor3DData, Error<E>> {
-        let mut data = [0u8; 6];
-        self.read_data(&mut [base_reg, 0, 0, 0, 0, 0, 0])?;
+        let mut data = [0u8; 7];
+        data[0] = base_reg;
         self.read_data(&mut data)?;
+        // self.read_data(&mut data)?;
         Ok(Sensor3DData {
-            x: i16::from_le_bytes([data[0], data[1]]),
-            y: i16::from_le_bytes([data[2], data[3]]),
-            z: i16::from_le_bytes([data[4], data[5]]),
+            x: i16::from_le_bytes([data[1], data[2]]),
+            y: i16::from_le_bytes([data[3], data[4]]),
+            z: i16::from_le_bytes([data[5], data[6]]),
         })
     }
 
@@ -124,23 +125,24 @@ where
         Ok(raw_data.to_dps(self.gyro_range.to_dps())) // Assuming 16-bit width
     }
 
-    pub fn read_temperature(&mut self) -> Result<f32, Error<E>> {
-        let mut data = [0u8; 2];
-        self.read_data(&mut data)?;
-        let raw_temp = i16::from_le_bytes([data[0], data[1]]);
-        Ok((raw_temp as f32 / 512.0) + 23.0)
-    }
+    /*
+           pub fn read_temperature(&mut self) -> Result<f32, Error<E>> {
+               let mut data = [0u8; 2];
+               self.read_data(&mut data)?;
+               let raw_temp = i16::from_le_bytes([data[0], data[1]]);
+               Ok((raw_temp as f32 / 512.0) + 23.0)
+           }
 
-    pub fn read_sensor_time(&mut self) -> Result<u32, Error<E>> {
-        let mut data = [0u8; 3];
-        self.read_data(&mut data)?;
-        Ok(u32::from_le_bytes([data[0], data[1], data[2], 0]))
-    }
+           pub fn read_sensor_time(&mut self) -> Result<u32, Error<E>> {
+               let mut data = [0u8; 3];
+               self.read_data(&mut data)?;
+               Ok(u32::from_le_bytes([data[0], data[1], data[2], 0]))
+           }
 
-    fn write_register(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
-        self.iface.write_register(reg, value)
-    }
-
+        fn write_register(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
+            self.iface.write_register(reg, value)
+        }
+    */
     fn write_register_16bit(&mut self, reg: u8, value: u16) -> Result<(), Error<E>> {
         let bytes = value.to_le_bytes();
         self.iface.write_data(&[reg, bytes[0], bytes[1]])

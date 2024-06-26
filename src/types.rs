@@ -9,14 +9,12 @@ pub enum Error<E> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct SensorPowerMode {
     pub accel: AccelerometerPowerMode,
     pub gyro: GyroscopePowerMode,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum AccelerometerPowerMode {
     Normal,
     Suspend,
@@ -44,7 +42,6 @@ impl Default for AccelerometerRange {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum GyroscopePowerMode {
     Normal,
     Suspend,
@@ -73,7 +70,6 @@ impl Default for GyroscopeRange {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Status {
     pub accel_data_ready: bool,
     pub gyro_data_ready: bool,
@@ -83,7 +79,6 @@ pub struct Status {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct SensorSelector {
     pub(crate) accel: bool,
     pub(crate) gyro: bool,
@@ -120,7 +115,6 @@ impl SensorSelector {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Sensor3DData {
     pub x: i16,
     pub y: i16,
@@ -128,7 +122,6 @@ pub struct Sensor3DData {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Data {
     pub accel: Option<Sensor3DData>,
     pub gyro: Option<Sensor3DData>,
@@ -136,7 +129,6 @@ pub struct Data {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Sensor3DDataScaled {
     pub x: f32,
     pub y: f32,
@@ -144,7 +136,6 @@ pub struct Sensor3DDataScaled {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct DataScaled {
     pub accel: Option<Sensor3DDataScaled>,
     pub gyro: Option<Sensor3DDataScaled>,

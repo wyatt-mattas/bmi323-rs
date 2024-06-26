@@ -1,4 +1,4 @@
-use bmi323_scratch::{AccelerometerRange, GyroscopeRange};
+use bmi323::{AccelerometerRange, GyroscopeRange};
 
 #[test]
 fn test_accelerometer_range_to_g() {

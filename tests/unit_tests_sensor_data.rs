@@ -1,4 +1,4 @@
-use bmi323_scratch::Sensor3DData;
+use bmi323::Sensor3DData;
 
 const EPSILON: f32 = 1e-5;
 
