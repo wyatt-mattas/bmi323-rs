@@ -17,6 +17,11 @@ where
             gyro_range: GyroscopeRange::default(),
         }
     }
+
+    /// Destroy driver instance, return I2C bus.
+    pub fn destroy(self) -> I2C {
+        self.iface.i2c
+    }
 }
 
 impl<SPI, D> Bmi323<SpiInterface<SPI>, D>
@@ -56,8 +61,8 @@ where
             return Err(Error::InvalidDevice);
         }
 
-        self.set_sensor_config(Register::ACC_CONF, SensorConfig::default())?;
-        self.set_sensor_config(Register::GYR_CONF, SensorConfig::default())?;
+        //self.set_sensor_config(Register::ACC_CONF, SensorConfig::default())?;
+        //self.set_sensor_config(Register::GYR_CONF, SensorConfig::default())?;
 
         Ok(())
     }
@@ -67,12 +72,19 @@ where
         base_reg: u8,
         config: SensorConfig,
     ) -> Result<(), Error<E>> {
-        let reg_data = [
-            config.odr | (config.range << 4) | (config.bw << 7),
-            config.avg_num | (config.mode << 4),
-        ];
-        self.write_register(base_reg, reg_data[0])?;
-        self.write_register(base_reg + 1, reg_data[1])?;
+        let mut reg_data = [0u8; 2];
+
+        // Set bits for the first byte (reg_data[0])
+        reg_data[0] = config.odr & 0xF; // ODR (4 bits)
+        reg_data[0] |= (config.range & 0x70) << 4; // Range (3 bits)
+        reg_data[0] |= (config.bw & 0x80) << 7; // BW (1 bit)
+
+        // Set bits for the second byte (reg_data[1])
+        reg_data[1] = config.avg_num & 0x07; // AVG_NUM (3 bits)
+        reg_data[1] |= (config.mode & 0x07) << 4; // MODE (3 bits)
+
+        // Write both bytes to the base register in a single operation
+        self.write_register_16bit(base_reg, u16::from_le_bytes(reg_data))?;
 
         if base_reg == Register::ACC_CONF {
             self.accel_range = AccelerometerRange::from_u8(config.range);
