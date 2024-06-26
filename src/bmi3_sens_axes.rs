@@ -55,7 +55,7 @@ impl Bmi3SensAxesData {
 impl Bmi3Dev {
     // Assuming Bmi3Dev and bmi3_get_regs are defined elsewhere
 
-    fn get_accel_sensor_data(&mut self, reg_addr: u8) -> Result<Bmi3SensAxesData, Bmi3Error> {
+    pub fn get_accel_sensor_data(&mut self, reg_addr: u8) -> Result<Bmi3SensAxesData, Bmi3Error> {
         let mut reg_data = [0u8; BMI3_ACC_NUM_BYTES as usize]; // Define BMI3_ACC_NUM_BYTES accordingly
 
         // Simulate reading from the device

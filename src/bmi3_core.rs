@@ -4,6 +4,7 @@ use crate::bmi3_defs::*;
 use crate::enums::{Bmi3Error, Bmi3Intf};
 // use core::usize;
 
+// TODO nuke the intf_ptr
 impl Bmi3Dev {
     pub fn null_ptr_check(&self) -> Bmi3Result<()> {
         if self.read.is_none() || self.write.is_none() || self.delay_us.is_none() {
@@ -70,16 +71,14 @@ impl Bmi3Dev {
             _ => reg_addr,
         };
 
-        match self.write {
-            Some(write_fn) => match write_fn(adjusted_reg_addr, data, len as u32, self.intf_ptr) {
+        // TODO look at replacing the some.read and some.write with unwrap as unwrap comsummes some
+        match self.write.unwrap()(adjusted_reg_addr, data, len as u32, self.intf_ptr) {
                 Ok(()) => {
                     self.delay_us.unwrap()(2, self.intf_ptr);
                     Ok(())
                 }
                 _ => Err(Bmi3Error::ComFail),
-            },
-            None => Err(Bmi3Error::NullPtr),
-        }
+            }
     }
 
     pub fn bmi3_get_regs(&mut self, reg_addr: u8, data: &mut [u8], len: u16) -> Bmi3Result<()> {
