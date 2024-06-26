@@ -75,9 +75,9 @@ where
         let mut reg_data = [0u8; 2];
 
         // Set bits for the first byte (reg_data[0])
-        reg_data[0] = config.odr & 0xF; // ODR (4 bits)
-        reg_data[0] |= (config.range & 0x70) << 4; // Range (3 bits)
-        reg_data[0] |= (config.bw & 0x80) << 7; // BW (1 bit)
+        reg_data[0] = config.odr & 0x0F; // ODR (4 bits)
+        reg_data[0] |= (config.range & 0x07) << 4; // Range (3 bits)
+        reg_data[0] |= (config.bw & 0x01) << 7; // BW (1 bit)
 
         // Set bits for the second byte (reg_data[1])
         reg_data[1] = config.avg_num & 0x07; // AVG_NUM (3 bits)

@@ -24,13 +24,17 @@ fn test_bmi323_init() {
 
 #[test]
 fn test_bmi323_set_sensor_config() {
-    let expectations = [I2cTransaction::write(0x68, vec![0x20, 0x48, 0x40])];
+    // OLD code was reg_data = [0x48, 0x40] but new code reg_data = [0xB8, 0x40]
+    let expectations = [
+        I2cTransaction::write(0x68, vec![0x20, 0xB8, 0x40]),
+        I2cTransaction::write(0x68, vec![0x21, 0x48, 0x40]),
+    ]; // if we assume this is right we pass.
 
     let i2c = I2cMock::new(&expectations);
     let delay = MockDelay::new();
     let mut bmi323 = Bmi323::new_with_i2c(i2c, 0x68, delay);
 
-    let config = SensorConfig {
+    let accel_config = SensorConfig {
         odr: 0x08,   // 100Hz
         range: 0x03, // G16 for accelerometer
         bw: 0x01,
@@ -38,9 +42,23 @@ fn test_bmi323_set_sensor_config() {
         mode: 0x04, // Normal performance mode
     };
 
+    let gyro_config = SensorConfig {
+        odr: 0x08,
+        range: 0x04,
+        bw: 0x00,
+        avg_num: 0x00,
+        mode: 0x04,
+    };
+
     bmi323
-        .set_sensor_config(Register::ACC_CONF, config)
+        .set_sensor_config(Register::ACC_CONF, accel_config)
         .unwrap();
+
+    bmi323
+        .set_sensor_config(Register::GYR_CONF, gyro_config)
+        .unwrap();
+
+    bmi323.destroy().done();
 }
 
 #[test]
