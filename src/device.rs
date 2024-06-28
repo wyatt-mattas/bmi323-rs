@@ -1,7 +1,7 @@
 use crate::{
     interface::{I2cInterface, ReadData, SpiInterface, WriteData},
     types::{AccelerometerRange, GyroscopeRange, Sensor3DData, Sensor3DDataScaled},
-    Bmi323, Error, Register, SensorConfig,
+    AccelConfig, Bmi323, Error, GyroConfig, Register,
 };
 use embedded_hal::delay::DelayNs;
 
@@ -16,11 +16,6 @@ where
             accel_range: AccelerometerRange::default(),
             gyro_range: GyroscopeRange::default(),
         }
-    }
-
-    /// Destroy driver instance, return I2C bus.
-    pub fn destroy(self) -> I2C {
-        self.iface.i2c
     }
 }
 
@@ -43,6 +38,12 @@ where
     DI: ReadData<Error = Error<E>> + WriteData<Error = Error<E>>,
     D: DelayNs,
 {
+    /// Create a new BMI323 device instance
+    ///
+    /// # Arguments
+    ///
+    /// * `iface` - The communication interface (I2C or SPI)
+    /// * `delay` - A delay provider
     pub fn new(iface: DI, delay: D) -> Self {
         Self {
             iface,
@@ -52,6 +53,7 @@ where
         }
     }
 
+    /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
         self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_ms(1);
@@ -61,41 +63,42 @@ where
             return Err(Error::InvalidDevice);
         }
 
-        //self.set_sensor_config(Register::ACC_CONF, SensorConfig::default())?;
-        //self.set_sensor_config(Register::GYR_CONF, SensorConfig::default())?;
-
         Ok(())
     }
 
-    pub fn set_sensor_config(
-        &mut self,
-        base_reg: u8,
-        config: SensorConfig,
-    ) -> Result<(), Error<E>> {
-        let mut reg_data = [0u8; 2];
-
-        // Set bits for the first byte (reg_data[0])
-        reg_data[0] = config.odr & 0x0F; // ODR (4 bits)
-        reg_data[0] |= (config.range & 0x07) << 4; // Range (3 bits)
-        reg_data[0] |= (config.bw & 0x01) << 7; // BW (1 bit)
-
-        // Set bits for the second byte (reg_data[1])
-        reg_data[1] = config.avg_num & 0x07; // AVG_NUM (3 bits)
-        reg_data[1] |= (config.mode & 0x07) << 4; // MODE (3 bits)
-
-        // Write both bytes to the base register in a single operation
-        self.write_register_16bit(base_reg, u16::from_le_bytes(reg_data))?;
-
-        if base_reg == Register::ACC_CONF {
-            self.accel_range = AccelerometerRange::from_u8(config.range);
-        } else if base_reg == Register::GYR_CONF {
-            self.gyro_range = GyroscopeRange::from_u8(config.range);
-        }
-
+    /// Set the accelerometer configuration
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The accelerometer configuration
+    pub fn set_accel_config(&mut self, config: AccelConfig) -> Result<(), Error<E>> {
+        let reg_data = self.config_to_reg_data(config);
+        self.write_register_16bit(Register::ACC_CONF, reg_data)?;
+        self.accel_range = config.range;
         Ok(())
     }
 
-    pub fn read_sensor_data(&mut self, base_reg: u8) -> Result<Sensor3DData, Error<E>> {
+    /// Set the gyroscope configuration
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The gyroscope configuration
+    pub fn set_gyro_config(&mut self, config: GyroConfig) -> Result<(), Error<E>> {
+        let reg_data = self.config_to_reg_data(config);
+        self.write_register_16bit(Register::GYR_CONF, reg_data)?;
+        self.gyro_range = config.range;
+        Ok(())
+    }
+
+    fn config_to_reg_data<T>(&self, config: T) -> u16
+    where
+        T: Into<u16> + Copy,
+    {
+        let config: u16 = config.into();
+        config
+    }
+
+    fn read_sensor_data(&mut self, base_reg: u8) -> Result<Sensor3DData, Error<E>> {
         let mut data = [0u8; 7];
         data[0] = base_reg;
         self.read_data(&mut data)?;

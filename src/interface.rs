@@ -1,20 +1,34 @@
 use crate::Error;
 use embedded_hal::{i2c, spi::SpiDevice};
 
+/// I2C communication interface for BMI323
 #[derive(Debug)]
 pub struct I2cInterface<I2C> {
     pub(crate) i2c: I2C,
     pub(crate) address: u8,
 }
 
+/// SPI communication interface for BMI323
 #[derive(Debug)]
 pub struct SpiInterface<SPI> {
     pub(crate) spi: SPI,
 }
 
+/// Trait for writing data to the BMI323
 pub trait WriteData {
     type Error;
+    /// Write a single byte to a register
+    ///
+    /// # Arguments
+    ///
+    /// * `register` - The register address
+    /// * `data` - The byte to write
     fn write_register(&mut self, register: u8, data: u8) -> Result<(), Self::Error>;
+    /// Write multiple bytes of data
+    ///
+    /// # Arguments
+    ///
+    /// * `payload` - The data to write
     fn write_data(&mut self, payload: &[u8]) -> Result<(), Self::Error>;
 }
 
@@ -50,7 +64,17 @@ where
 
 pub trait ReadData {
     type Error;
+    /// Read a single byte from a register
+    ///
+    /// # Arguments
+    ///
+    /// * `register` - The register address to read from
     fn read_register(&mut self, register: u8) -> Result<u8, Self::Error>;
+    /// Read multiple bytes of data
+    ///
+    /// # Arguments
+    ///
+    /// * `payload` - Buffer to store the read data
     fn read_data(&mut self, payload: &mut [u8]) -> Result<(), Self::Error>;
 }
 

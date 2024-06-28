@@ -1,4 +1,7 @@
-use bmi323::{Bmi323, Register, SensorConfig};
+use bmi323::{
+    AccelConfig, AccelerometerPowerMode, AccelerometerRange, AverageNum, Bandwidth, Bmi323,
+    GyroConfig, GyroscopePowerMode, GyroscopeRange, OutputDataRate,
+};
 use embedded_hal_mock::eh1::delay::NoopDelay as MockDelay;
 use embedded_hal_mock::eh1::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
@@ -9,51 +12,46 @@ fn test_bmi323_init() {
         I2cTransaction::write_read(0x68, vec![0x00], vec![0x43]),
     ];
 
-    let i2c = I2cMock::new(&expectations);
+    let mut i2c = I2cMock::new(&expectations);
     let delay = MockDelay::new();
-    let mut bmi323 = Bmi323::new_with_i2c(i2c, 0x68, delay);
+    let mut bmi323 = Bmi323::new_with_i2c(i2c.clone(), 0x68, delay);
 
     bmi323.init().unwrap();
 
-    bmi323.destroy().done();
+    i2c.done();
 }
 
 #[test]
 fn test_bmi323_set_sensor_config() {
     let expectations = [
-        I2cTransaction::write(0x68, vec![0x20, 0xB8, 0x40]),
-        I2cTransaction::write(0x68, vec![0x21, 0x48, 0x40]),
+        I2cTransaction::write(0x68, vec![0x20, 0xB8, 0x46]), // Accelerometer config
+        I2cTransaction::write(0x68, vec![0x21, 0x48, 0x46]), // Gyroscope config
     ];
 
-    let i2c = I2cMock::new(&expectations);
+    let mut i2c = I2cMock::new(&expectations);
     let delay = MockDelay::new();
-    let mut bmi323 = Bmi323::new_with_i2c(i2c, 0x68, delay);
+    let mut bmi323 = Bmi323::new_with_i2c(i2c.clone(), 0x68, delay);
 
-    let accel_config = SensorConfig {
-        odr: 0x08,   // 100Hz
-        range: 0x03, // G16 for accelerometer
-        bw: 0x01,
-        avg_num: 0x00,
-        mode: 0x04, // Normal performance mode
-    };
+    let accel_config = AccelConfig::builder()
+        .odr(OutputDataRate::Odr100hz)
+        .range(AccelerometerRange::G16)
+        .bw(Bandwidth::OdrQuarter) // ODR/4
+        .avg_num(AverageNum::Avg64)
+        .mode(AccelerometerPowerMode::Normal)
+        .build();
 
-    let gyro_config = SensorConfig {
-        odr: 0x08,
-        range: 0x04,
-        bw: 0x00,
-        avg_num: 0x00,
-        mode: 0x04,
-    };
+    let gyro_config = GyroConfig::builder()
+        .odr(OutputDataRate::Odr100hz)
+        .range(GyroscopeRange::DPS2000)
+        .bw(Bandwidth::OdrHalf) // ODR/2
+        .avg_num(AverageNum::Avg64)
+        .mode(GyroscopePowerMode::Normal)
+        .build();
 
-    bmi323
-        .set_sensor_config(Register::ACC_CONF, accel_config)
-        .unwrap();
+    bmi323.set_accel_config(accel_config).unwrap();
+    bmi323.set_gyro_config(gyro_config).unwrap();
 
-    bmi323
-        .set_sensor_config(Register::GYR_CONF, gyro_config)
-        .unwrap();
-
-    bmi323.destroy().done();
+    i2c.done();
 }
 
 #[test]
@@ -64,14 +62,14 @@ fn test_bmi323_read_sensor_data() {
         vec![0, 0, 0, 0, 0, 0],
     )];
 
-    let i2c = I2cMock::new(&expectations);
+    let mut i2c = I2cMock::new(&expectations);
     let delay = MockDelay::new();
-    let mut bmi323 = Bmi323::new_with_i2c(i2c, 0x68, delay);
+    let mut bmi323 = Bmi323::new_with_i2c(i2c.clone(), 0x68, delay);
 
-    let sensor_data = bmi323.read_sensor_data(Register::ACC_DATA_X).unwrap();
+    let sensor_data = bmi323.read_accel_data().unwrap();
     assert_eq!(sensor_data.x, 0);
     assert_eq!(sensor_data.y, 0);
     assert_eq!(sensor_data.z, 0);
 
-    bmi323.destroy().done();
+    i2c.done();
 }
