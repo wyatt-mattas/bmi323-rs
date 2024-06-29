@@ -104,9 +104,9 @@ where
         self.read_data(&mut data)?;
         // self.read_data(&mut data)?;
         Ok(Sensor3DData {
-            x: i16::from_le_bytes([data[1], data[2]]),
-            y: i16::from_le_bytes([data[3], data[4]]),
-            z: i16::from_le_bytes([data[5], data[6]]),
+            x: (u16::from(data[1]) | (u16::from(data[2]) << 8)) as i16,
+            y: (u16::from(data[3]) | (u16::from(data[4]) << 8)) as i16,
+            z: (u16::from(data[5]) | (u16::from(data[6]) << 8)) as i16,
         })
     }
 
