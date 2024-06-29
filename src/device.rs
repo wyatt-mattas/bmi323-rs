@@ -1,6 +1,6 @@
 use crate::{
     interface::{I2cInterface, ReadData, SpiInterface, WriteData},
-    types::{AccelerometerRange, GyroscopeRange, Sensor3DData, Sensor3DDataScaled},
+    types::{AccelerometerRange, GyroscopeRange, Sensor3DData, Sensor3DDataScaled, SensorType},
     AccelConfig, Bmi323, Error, GyroConfig, Register,
 };
 use embedded_hal::delay::DelayNs;
@@ -98,24 +98,29 @@ where
         config
     }
 
-    fn read_sensor_data(&mut self, base_reg: u8) -> Result<Sensor3DData, Error<E>> {
-        let mut data = [0u8; 7];
+    fn read_sensor_data(&mut self, sensor_type: SensorType) -> Result<Sensor3DData, Error<E>> {
+        let (base_reg, data_size) = match sensor_type {
+            SensorType::Accelerometer => (Register::ACC_DATA_X, 21),
+            SensorType::Gyroscope => (Register::GYR_DATA_X, 15),
+        };
+
+        let mut data = [0u8; 21]; // Use the larger size
         data[0] = base_reg;
-        self.read_data(&mut data)?;
-        // self.read_data(&mut data)?;
+        self.read_data(&mut data[0..data_size])?;
+
         Ok(Sensor3DData {
-            x: (u16::from(data[1]) | (u16::from(data[2]) << 8)) as i16,
-            y: (u16::from(data[3]) | (u16::from(data[4]) << 8)) as i16,
-            z: (u16::from(data[5]) | (u16::from(data[6]) << 8)) as i16,
+            x: i16::from_le_bytes([data[1], data[2]]),
+            y: i16::from_le_bytes([data[3], data[4]]),
+            z: i16::from_le_bytes([data[5], data[6]]),
         })
     }
 
     pub fn read_accel_data(&mut self) -> Result<Sensor3DData, Error<E>> {
-        self.read_sensor_data(Register::ACC_DATA_X)
+        self.read_sensor_data(SensorType::Accelerometer)
     }
 
     pub fn read_gyro_data(&mut self) -> Result<Sensor3DData, Error<E>> {
-        self.read_sensor_data(Register::GYR_DATA_X)
+        self.read_sensor_data(SensorType::Gyroscope)
     }
 
     pub fn read_accel_data_scaled(&mut self) -> Result<Sensor3DDataScaled, Error<E>> {

@@ -216,3 +216,9 @@ pub enum Bandwidth {
     /// Quarter of the output data rate
     OdrQuarter = 1,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SensorType {
+    Accelerometer,
+    Gyroscope,
+}
