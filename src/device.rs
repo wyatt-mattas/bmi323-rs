@@ -58,8 +58,10 @@ where
         self.soft_reset()?;
         self.delay.delay_ms(1);
 
-        let chip_id = self.read_register(Register::CHIPID)?;
-        if chip_id != Register::BMI323_CHIP_ID {
+        let mut reg_data = [0u8, 3];
+        reg_data[0] = Register::CHIPID;
+        self.read_data(&mut reg_data)?;
+        if reg_data[0] != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
         }
 
@@ -86,8 +88,10 @@ where
         // Polling loop
         for _ in 0..10 {
             self.delay.delay_ms(100);
-            let reg_data = self.read_register(Register::FEATURE_IO1)?;
-            if reg_data & 0x01 != 0 {
+            let mut reg_data = [0u8, 3];
+            reg_data[0] = Register::FEATURE_IO1;
+            self.read_data(&mut reg_data)?;
+            if reg_data[0] & 0x01 != 0 {
                 break;
             }
         }
