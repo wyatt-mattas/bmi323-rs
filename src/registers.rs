@@ -35,4 +35,8 @@ impl Register {
     pub const BMI323_CHIP_ID: u8 = 0x43;
     /// Soft reset command value
     pub const CMD_SOFT_RESET: u16 = 0xDEAF;
+    pub const FEATURE_IO2: u8 = 0x12;
+    pub const FEATURE_IO_STATUS: u8 = 0x14;
+    pub const FEATURE_CTRL: u8 = 0x40;
+    pub const FEATURE_IO1: u8 = 0x11;
 }

@@ -12,7 +12,7 @@ pub use registers::Register;
 mod types;
 pub use types::{
     AccelerometerPowerMode, AccelerometerRange, AverageNum, Bandwidth, Data, DataScaled, Error,
-    GyroscopePowerMode, GyroscopeRange, OutputDataRate, Sensor3DData, Status,
+    GyroscopePowerMode, GyroscopeRange, OutputDataRate, Sensor3DData, Sensor3DDataScaled, Status,
 };
 mod sensor_data;
 pub use sensor_data::*;
