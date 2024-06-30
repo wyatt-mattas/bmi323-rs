@@ -58,7 +58,7 @@ where
         self.soft_reset()?;
         self.delay.delay_ms(1);
 
-        let mut reg_data = [0u8; 3];
+        let mut reg_data = [0u8; 2];
         reg_data[0] = Register::CHIPID;
         self.read_data(&mut reg_data)?;
         if reg_data[0] != Register::BMI323_CHIP_ID {
@@ -88,10 +88,10 @@ where
         // Polling loop
         for _ in 0..10 {
             self.delay.delay_ms(100);
-            let mut reg_data = [0u8; 3];
+            let mut reg_data = [0u8; 2];
             reg_data[0] = Register::FEATURE_IO1;
             self.read_data(&mut reg_data)?;
-            if reg_data[0] & 0x01 == 1 {
+            if reg_data[0] == 1 {
                 break;
             }
         }
