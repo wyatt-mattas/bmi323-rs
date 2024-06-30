@@ -276,6 +276,7 @@ pub const BMI3_REG_INT_STATUS_INT1: u8 = 0x0D;
 pub const BMI3_REG_INT_STATUS_INT2: u8 = 0x0E;
 
 pub const BMI3_INT_STATUS_GYR_DRDY: u16 = 0x1000;
+pub const BMI3_INT_STATUS_ACC_DRDY: u16 = 0x2000;
 
 pub const BMI3_SATF_ACC_X_MASK: u16 = 0x0001;
 
@@ -303,6 +304,7 @@ pub const BMI3_ACC_NUM_BYTES: u8 = 20;
 pub const BMI3_GYR_NUM_BYTES: u8 = 14;
 
 pub const BMI3_REG_GYR_DATA_X: u8 = 0x06;
+pub const BMI3_REG_ACC_DATA_X: u8 = 0x03;
 
 pub const BMI323_CHIP_ID: u16 = 0x0043;
 pub const BMI3_16_BIT_RESOLUTION: u8 = 16;
