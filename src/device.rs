@@ -66,10 +66,10 @@ where
             return Err(Error::InvalidDevice);
         }
 
-        let mut reg_data = [0u8; 2];
+        let mut reg_data = [0u8; 3];
         reg_data[0] = Register::CHIPID;
         self.read_data(&mut reg_data)?;
-        if reg_data[0] != Register::BMI323_CHIP_ID {
+        if reg_data[1] != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
         }
 
