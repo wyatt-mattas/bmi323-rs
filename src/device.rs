@@ -55,7 +55,7 @@ where
 
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
-        self.set_command_register(Register::CMD_SOFT_RESET)?;
+        //self.set_command_register(Register::CMD_SOFT_RESET)?;
         //self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
