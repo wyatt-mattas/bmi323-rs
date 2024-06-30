@@ -59,7 +59,7 @@ where
         //self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
-        let mut reg_data = [0u8; 2];
+        let mut reg_data = [0u8; 3];
         reg_data[0] = 0x01; // sensor error conditins register
         self.read_data(&mut reg_data)?;
         if reg_data[0] != 0 {
@@ -106,7 +106,7 @@ where
         }
 
         Ok(())
-        } */
+        }
 
     /// Set a command in the command register
     fn set_command_register(&mut self, command: u16) -> Result<(), Error<E>> {
@@ -122,7 +122,7 @@ where
         self.write_register(Register::CMD, reg_data[1])?;
 
         Ok(())
-    }
+        }*/
 
     /// Set the accelerometer configuration
     ///
@@ -203,11 +203,11 @@ where
         let mut data = [0u8; 3];
         self.read_data(&mut data)?;
         Ok(u32::from_le_bytes([data[0], data[1], data[2], 0]))
-        }*/
+        }
 
     fn write_register(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
         self.iface.write_register(reg, value)
-    }
+        }*/
 
     fn write_register_16bit(&mut self, reg: u8, value: u16) -> Result<(), Error<E>> {
         let bytes = value.to_le_bytes();
