@@ -59,17 +59,18 @@ where
         //self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
-        let mut reg_data = [0u8; 3];
-        reg_data[0] = 0x01; // sensor error conditins register
-        self.read_data(&mut reg_data)?;
-        if reg_data[1] != 0 {
+        //let mut reg_data = [0u8; 3];
+        //reg_data[0] = 0x01; // sensor error conditins register
+        let result = self.read_register(0x01)?;
+        if result != 0 {
             return Err(Error::InvalidDevice);
         }
 
         let mut reg_data = [0u8; 3];
         reg_data[0] = Register::CHIPID;
         self.read_data(&mut reg_data)?;
-        if reg_data[1] != Register::BMI323_CHIP_ID {
+        let result = self.read_register(0x01)?;
+        if result != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
         }
 
@@ -214,10 +215,9 @@ where
         self.iface.write_data(&[reg, bytes[0], bytes[1]])
     }
 
-    /*
     fn read_register(&mut self, reg: u8) -> Result<u8, Error<E>> {
         self.iface.read_register(reg)
-        }*/
+    }
 
     fn read_data(&mut self, data: &mut [u8]) -> Result<(), Error<E>> {
         self.iface.read_data(data)
