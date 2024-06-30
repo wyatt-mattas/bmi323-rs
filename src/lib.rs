@@ -17,6 +17,7 @@ pub use types::{
 mod sensor_data;
 pub use sensor_data::*;
 
+#[repr(C)]
 pub struct Bmi323<DI, D> {
     iface: DI,
     delay: D,
