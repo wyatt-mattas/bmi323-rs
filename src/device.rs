@@ -60,6 +60,13 @@ where
         self.delay.delay_us(2000);
 
         let mut reg_data = [0u8; 2];
+        reg_data[0] = 0x01; // sensor error conditins register
+        self.read_data(&mut reg_data)?;
+        if reg_data[0] != Register::BMI323_CHIP_ID {
+            return Err(Error::InvalidDevice);
+        }
+
+        let mut reg_data = [0u8; 2];
         reg_data[0] = Register::CHIPID;
         self.read_data(&mut reg_data)?;
         if reg_data[0] != Register::BMI323_CHIP_ID {
