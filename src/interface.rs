@@ -84,7 +84,7 @@ where
 {
     type Error = Error<E>;
     fn read_register(&mut self, register: u8) -> Result<u8, Self::Error> {
-        let mut data = [0];
+        let mut data = [0u8; 2];
         self.i2c
             .write_read(self.address, &[register], &mut data)
             .map_err(Error::Comm)?;
