@@ -66,10 +66,10 @@ where
             return Err(Error::InvalidDevice);
         }
 
-        let mut reg_data = [0u8; 3];
-        reg_data[0] = Register::CHIPID;
-        self.read_data(&mut reg_data)?;
-        let result = self.read_register(0x01)?;
+        //let mut reg_data = [0u8; 3];
+        //reg_data[0] = Register::CHIPID;
+        //self.read_data(&mut reg_data)?;
+        let result = self.read_register(Register::CHIPID)?;
         if result != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
         }
