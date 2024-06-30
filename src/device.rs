@@ -56,7 +56,7 @@ where
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
         self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
-        self.delay.delay_ms(100);
+        self.delay.delay_ms(1500);
 
         let mut reg_data = [0u8; 2];
         reg_data[0] = Register::CHIPID;
