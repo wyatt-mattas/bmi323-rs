@@ -62,7 +62,7 @@ where
         let mut reg_data = [0u8; 2];
         reg_data[0] = 0x01; // sensor error conditins register
         self.read_data(&mut reg_data)?;
-        if reg_data[0] != Register::BMI323_CHIP_ID {
+        if reg_data[0] != 0 {
             return Err(Error::InvalidDevice);
         }
 
@@ -117,7 +117,11 @@ where
             (command & BMI3_SET_LOW_BYTE) as u8,
             ((command & BMI3_SET_HIGH_BYTE) >> 8) as u8,
         ];
-        self.write_register_16bit(Register::CMD, u16::from_le_bytes(reg_data))
+
+        self.write_register(Register::CMD, reg_data[0])?;
+        self.write_register(Register::CMD, reg_data[1])?;
+
+        Ok(())
     }
 
     /// Set the accelerometer configuration
@@ -199,11 +203,11 @@ where
         let mut data = [0u8; 3];
         self.read_data(&mut data)?;
         Ok(u32::from_le_bytes([data[0], data[1], data[2], 0]))
-        }
+        }*/
 
     fn write_register(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
         self.iface.write_register(reg, value)
-        }*/
+    }
 
     fn write_register_16bit(&mut self, reg: u8, value: u16) -> Result<(), Error<E>> {
         let bytes = value.to_le_bytes();
