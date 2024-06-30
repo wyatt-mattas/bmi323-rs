@@ -55,8 +55,9 @@ where
 
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
-        self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
-        self.delay.delay_ms(1500);
+        self.set_command_register(Register::CMD_SOFT_RESET)?;
+        //self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
+        self.delay.delay_us(2000);
 
         let mut reg_data = [0u8; 2];
         reg_data[0] = Register::CHIPID;
@@ -101,7 +102,6 @@ where
         } */
 
     /// Set a command in the command register
-    /*
     fn set_command_register(&mut self, command: u16) -> Result<(), Error<E>> {
         const BMI3_SET_LOW_BYTE: u16 = 0x00FF;
         const BMI3_SET_HIGH_BYTE: u16 = 0xFF00;
@@ -111,7 +111,7 @@ where
             ((command & BMI3_SET_HIGH_BYTE) >> 8) as u8,
         ];
         self.write_register_16bit(Register::CMD, u16::from_le_bytes(reg_data))
-        } */
+    }
 
     /// Set the accelerometer configuration
     ///
@@ -203,9 +203,10 @@ where
         self.iface.write_data(&[reg, bytes[0], bytes[1]])
     }
 
+    /*
     fn read_register(&mut self, reg: u8) -> Result<u8, Error<E>> {
         self.iface.read_register(reg)
-    }
+        }*/
 
     fn read_data(&mut self, data: &mut [u8]) -> Result<(), Error<E>> {
         self.iface.read_data(data)
