@@ -91,7 +91,7 @@ where
             let mut reg_data = [0u8, 3];
             reg_data[0] = Register::FEATURE_IO1;
             self.read_data(&mut reg_data)?;
-            if reg_data[0] & 0x01 != 0 {
+            if reg_data[0] & 0x01 != 1 {
                 break;
             }
         }
