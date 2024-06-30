@@ -55,8 +55,8 @@ where
 
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
-        self.soft_reset()?;
-        self.delay.delay_ms(1);
+        self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
+        self.delay.delay_ms(5);
 
         let mut reg_data = [0u8; 2];
         reg_data[0] = Register::CHIPID;
@@ -70,8 +70,9 @@ where
 
     /// Soft reset the device
     /// Perform a soft reset of the BMI323 device
+    /*
     fn soft_reset(&mut self) -> Result<(), Error<E>> {
-        self.set_command_register(Register::CMD_SOFT_RESET)?;
+        self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_ms(2);
 
         // Perform setup
@@ -97,9 +98,10 @@ where
         }
 
         Ok(())
-    }
+        } */
 
     /// Set a command in the command register
+    /*
     fn set_command_register(&mut self, command: u16) -> Result<(), Error<E>> {
         const BMI3_SET_LOW_BYTE: u16 = 0x00FF;
         const BMI3_SET_HIGH_BYTE: u16 = 0xFF00;
@@ -109,7 +111,7 @@ where
             ((command & BMI3_SET_HIGH_BYTE) >> 8) as u8,
         ];
         self.write_register_16bit(Register::CMD, u16::from_le_bytes(reg_data))
-    }
+        } */
 
     /// Set the accelerometer configuration
     ///
