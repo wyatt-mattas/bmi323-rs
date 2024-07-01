@@ -84,10 +84,15 @@ where
 {
     type Error = Error<E>;
     fn read_register(&mut self, register: u8) -> Result<u8, Self::Error> {
+        let mut temp_data = [0u8; 128];
         let mut data = [0u8; 2];
         self.i2c
-            .write_read(self.address, &[register], &mut data)
+            .write_read(self.address, &[register], &mut temp_data)
             .map_err(Error::Comm)?;
+
+        for i in 0..data.len() {
+            data[i] = temp_data[i + 2];
+        }
         Ok(data[0])
     }
 
