@@ -97,13 +97,21 @@ where
     }
 
     fn read_data(&mut self, payload: &mut [u8]) -> Result<(), Self::Error> {
+        let mut temp_data = [0u8; 128];
+        let address = payload[0];
         let len = payload.len();
+        let data = &mut payload[1..len - 1];
         self.i2c
-            .write_read(self.address, &[payload[0]], &mut payload[1..len])
-            .map_err(Error::Comm)
+            .write_read(self.address, &[address], &mut temp_data)
+            .map_err(Error::Comm)?;
+        for i in 0..data.len() {
+            data[i] = temp_data[i + 2];
+        }
+        Ok(())
     }
 }
 
+/*
 impl<SPI, E> ReadData for SpiInterface<SPI>
 where
     SPI: SpiDevice<Error = E>,
@@ -120,4 +128,4 @@ where
         self.spi.transfer_in_place(payload).map_err(Error::Comm)?;
         Ok(())
     }
-}
+    }*/
