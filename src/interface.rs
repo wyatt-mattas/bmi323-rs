@@ -115,21 +115,28 @@ where
     }
 }
 
-/*
 impl<SPI, E> ReadData for SpiInterface<SPI>
 where
     SPI: SpiDevice<Error = E>,
 {
     type Error = Error<E>;
     fn read_register(&mut self, register: u8) -> Result<u8, Self::Error> {
-        let mut data = [register + 0x80, 0];
+        let mut data = [register | 0x80, 0, 0]; // Add read bit and 1 dummy byte
         self.spi.transfer_in_place(&mut data).map_err(Error::Comm)?;
-        Ok(data[1])
+        Ok(data[2]) // Return the actual data byte, skipping dummy byte
     }
 
-    fn read_data(&mut self, payload: &mut [u8]) -> Result<(), Self::Error> {
-        payload[0] += 0x80;
-        self.spi.transfer_in_place(payload).map_err(Error::Comm)?;
-        Ok(())
+    fn read_data<'a>(&mut self, payload: &'a mut [u8]) -> Result<&'a [u8], Self::Error> {
+        let len = payload.len();
+        let mut temp_buf = [0u8; 128]; // Temporary buffer to hold read bit, dummy byte, and data
+        temp_buf[0] = payload[0] | 0x80; // Add read bit to register address
+
+        self.spi
+            .transfer_in_place(&mut temp_buf[..len + 1])
+            .map_err(Error::Comm)?; // +1 for dummy byte
+
+        // Copy data from temp_buf to payload, skipping dummy byte
+        payload[1..].copy_from_slice(&temp_buf[2..len + 1]);
+        Ok(&payload[1..])
     }
-    }*/
+}
