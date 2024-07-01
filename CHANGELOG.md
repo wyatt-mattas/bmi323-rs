@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-06-27
 ### Added
 - Initial release of the BMI323 Rust driver.
-- Support for both I2C and SPI interfaces.
+- Support for both I2C and SPI interfaces (SPI not validated).
 - Configurable accelerometer and gyroscope settings.
 - Functions to read raw and scaled sensor data.
 - Error handling and device initialization.
