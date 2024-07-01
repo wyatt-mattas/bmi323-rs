@@ -164,12 +164,12 @@ where
 
         let mut data = [0u8; 21]; // Use the larger size
         data[0] = base_reg;
-        self.read_data(&mut data[0..data_size])?;
+        let sensor_data = self.read_data(&mut data[0..data_size])?;
 
         Ok(Sensor3DData {
-            x: i16::from_le_bytes([data[1], data[2]]),
-            y: i16::from_le_bytes([data[3], data[4]]),
-            z: i16::from_le_bytes([data[5], data[6]]),
+            x: i16::from_le_bytes([sensor_data[0], sensor_data[1]]),
+            y: i16::from_le_bytes([sensor_data[2], sensor_data[3]]),
+            z: i16::from_le_bytes([sensor_data[4], sensor_data[5]]),
         })
     }
 
@@ -218,7 +218,7 @@ where
         self.iface.read_register(reg)
     }
 
-    fn read_data(&mut self, data: &mut [u8]) -> Result<(), Error<E>> {
+    fn read_data<'a>(&mut self, data: &'a mut [u8]) -> Result<&'a [u8], Error<E>> {
         self.iface.read_data(data)
     }
 }

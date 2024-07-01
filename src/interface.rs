@@ -75,7 +75,7 @@ pub trait ReadData {
     /// # Arguments
     ///
     /// * `payload` - Buffer to store the read data
-    fn read_data(&mut self, payload: &mut [u8]) -> Result<(), Self::Error>;
+    fn read_data<'a>(&mut self, payload: &'a mut [u8]) -> Result<&'a [u8], Self::Error>;
 }
 
 impl<I2C, E> ReadData for I2cInterface<I2C>
@@ -96,7 +96,7 @@ where
         Ok(data[0])
     }
 
-    fn read_data(&mut self, payload: &mut [u8]) -> Result<(), Self::Error> {
+    fn read_data<'a>(&mut self, payload: &'a mut [u8]) -> Result<&'a [u8], Self::Error> {
         let mut temp_data = [0u8; 128];
         let address = payload[0];
         let len = payload.len();
@@ -107,7 +107,7 @@ where
         for i in 0..data.len() {
             data[i] = temp_data[i + 2];
         }
-        Ok(())
+        Ok(data)
     }
 }
 
