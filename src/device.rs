@@ -56,7 +56,7 @@ where
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
         //self.set_command_register(Register::CMD_SOFT_RESET)?;
-        //self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
+        self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
         //let mut reg_data = [0u8; 3];
@@ -119,8 +119,7 @@ where
             ((command & BMI3_SET_HIGH_BYTE) >> 8) as u8,
         ];
 
-        self.write_register(Register::CMD, reg_data[0])?;
-        self.write_register(Register::CMD, reg_data[1])?;
+        self.write_register_16bit(command, u16::from_le_bytes(reg_data))?;
 
         Ok(())
         }*/
