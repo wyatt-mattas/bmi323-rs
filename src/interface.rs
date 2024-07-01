@@ -89,7 +89,6 @@ where
         self.i2c
             .write_read(self.address, &[register], &mut temp_data)
             .map_err(Error::Comm)?;
-
         for i in 0..data.len() {
             data[i] = temp_data[i + 2];
         }

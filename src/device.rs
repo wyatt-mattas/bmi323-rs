@@ -55,20 +55,14 @@ where
 
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
-        //self.set_command_register(Register::CMD_SOFT_RESET)?;
         self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
-        //let mut reg_data = [0u8; 3];
-        //reg_data[0] = 0x01; // sensor error conditins register
         let result = self.read_register(0x01)?;
         if result != 0 {
             return Err(Error::InvalidDevice);
         }
 
-        //let mut reg_data = [0u8; 3];
-        //reg_data[0] = Register::CHIPID;
-        //self.read_data(&mut reg_data)?;
         let result = self.read_register(Register::CHIPID)?;
         if result != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
@@ -76,53 +70,6 @@ where
 
         Ok(())
     }
-
-    /// Soft reset the device
-    /// Perform a soft reset of the BMI323 device
-    /*
-    fn soft_reset(&mut self) -> Result<(), Error<E>> {
-        self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
-        self.delay.delay_ms(2);
-
-        // Perform setup
-        let setups = [
-            (Register::FEATURE_IO2, [0x2c, 0x01]),
-            (Register::FEATURE_IO_STATUS, [0x01, 0]),
-            (Register::FEATURE_CTRL, [0x01, 0]),
-        ];
-
-        for (reg, data) in setups.iter() {
-            self.write_register_16bit(*reg, u16::from_le_bytes(*data))?;
-        }
-
-        // Polling loop
-        for _ in 0..10 {
-            self.delay.delay_ms(100);
-            let mut reg_data = [0u8; 2];
-            reg_data[0] = Register::FEATURE_IO1;
-            self.read_data(&mut reg_data)?;
-            if reg_data[0] == 1 {
-                break;
-            }
-        }
-
-        Ok(())
-        }
-
-    /// Set a command in the command register
-    fn set_command_register(&mut self, command: u16) -> Result<(), Error<E>> {
-        const BMI3_SET_LOW_BYTE: u16 = 0x00FF;
-        const BMI3_SET_HIGH_BYTE: u16 = 0xFF00;
-
-        let reg_data = [
-            (command & BMI3_SET_LOW_BYTE) as u8,
-            ((command & BMI3_SET_HIGH_BYTE) >> 8) as u8,
-        ];
-
-        self.write_register_16bit(command, u16::from_le_bytes(reg_data))?;
-
-        Ok(())
-        }*/
 
     /// Set the accelerometer configuration
     ///
