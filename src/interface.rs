@@ -96,17 +96,21 @@ where
         Ok(data[0])
     }
 
-    fn read_data<'a>(&mut self, payload: &'a mut [u8]) -> Result<&'a [u8], Self::Error> {
-        let mut temp_data = [0u8; 128];
+    fn read_data<'a>(&mut self, payload: &'a mut [u8]) -> Result<&'a [u8], Error<E>> {
         let address = payload[0];
         let len = payload.len();
         let data = &mut payload[1..len];
+
+        let total_len = data.len() + 2;
+        let mut temp_buf = [0u8; 128]; // Temporary buffer to hold dummy bytes and data
+
         self.i2c
-            .write_read(self.address, &[address], &mut temp_data)
+            .write_read(self.address, &[address], &mut temp_buf[..total_len])
             .map_err(Error::Comm)?;
-        for i in 0..data.len() {
-            data[i] = temp_data[i + 2];
-        }
+
+        // Copy data from temp_buf to data, skipping dummy bytes
+        data.copy_from_slice(&temp_buf[2..total_len]);
+
         Ok(data)
     }
 }
