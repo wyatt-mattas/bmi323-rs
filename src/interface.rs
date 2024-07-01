@@ -100,7 +100,7 @@ where
         let mut temp_data = [0u8; 128];
         let address = payload[0];
         let len = payload.len();
-        let data = &mut payload[1..len - 1];
+        let data = &mut payload[1..len];
         self.i2c
             .write_read(self.address, &[address], &mut temp_data)
             .map_err(Error::Comm)?;
