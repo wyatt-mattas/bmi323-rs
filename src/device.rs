@@ -58,8 +58,8 @@ where
 
         //let mut reg_data = [0u8; 3];
         //reg_data[0] = 0x01; // sensor error conditins register
-        let result = self.read_register(0x01)?;
-        if result != 0 {
+        let status = self.read_register(0x01)?;
+        if (status & 0b0000_0001) == 0 {
             return Err(Error::InvalidDevice);
         }
 
@@ -123,13 +123,27 @@ where
         })
     }
 
+    fn is_data_ready(&mut self, sensor_type: SensorType) -> Result<bool, Error<E>> {
+        let status = self.read_register(Register::STATUS)?;
+        match sensor_type {
+            SensorType::Accelerometer => Ok((status & 0b1000_0000) != 0), // Check bit 7 (drdy_acc)
+            SensorType::Gyroscope => Ok((status & 0b0100_0000) != 0),     // Check bit 6 (drdy_gyr)
+        }
+    }
+
     /// Read the LSB for the accelerometer
     pub fn read_accel_data(&mut self) -> Result<Sensor3DData, Error<E>> {
+        while !self.is_data_ready(SensorType::Accelerometer)? {
+            self.delay.delay_ms(1);
+        }
         self.read_sensor_data(SensorType::Accelerometer)
     }
 
     /// Read the LSB for the gyroscope
     pub fn read_gyro_data(&mut self) -> Result<Sensor3DData, Error<E>> {
+        while !self.is_data_ready(SensorType::Gyroscope)? {
+            self.delay.delay_ms(1);
+        }
         self.read_sensor_data(SensorType::Gyroscope)
     }
 
