@@ -9,6 +9,8 @@ pub enum Error<E> {
     InvalidDevice,
     /// Invalid configuration
     InvalidConfig,
+    /// Timeout error
+    Timeout,
 }
 
 /// Accelerometer power modes

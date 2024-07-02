@@ -83,6 +83,10 @@ where
         let reg_data = self.config_to_reg_data(config);
         self.write_register_16bit(Register::ACC_CONF, reg_data)?;
         self.accel_range = config.range;
+
+        // Wait for accelerometer data to be ready
+        self.wait_for_data_ready(SensorType::Accelerometer)?;
+
         Ok(())
     }
 
@@ -95,6 +99,10 @@ where
         let reg_data = self.config_to_reg_data(config);
         self.write_register_16bit(Register::GYR_CONF, reg_data)?;
         self.gyro_range = config.range;
+
+        // Wait for gyroscope data to be ready
+        self.wait_for_data_ready(SensorType::Gyroscope)?;
+
         Ok(())
     }
 
@@ -123,27 +131,13 @@ where
         })
     }
 
-    fn is_data_ready(&mut self, sensor_type: SensorType) -> Result<bool, Error<E>> {
-        let status = self.read_register(Register::STATUS)?;
-        match sensor_type {
-            SensorType::Accelerometer => Ok((status & 0b1000_0000) != 0), // Check bit 7 (drdy_acc)
-            SensorType::Gyroscope => Ok((status & 0b0100_0000) != 0),     // Check bit 6 (drdy_gyr)
-        }
-    }
-
     /// Read the LSB for the accelerometer
     pub fn read_accel_data(&mut self) -> Result<Sensor3DData, Error<E>> {
-        while !self.is_data_ready(SensorType::Accelerometer)? {
-            self.delay.delay_ms(1);
-        }
         self.read_sensor_data(SensorType::Accelerometer)
     }
 
     /// Read the LSB for the gyroscope
     pub fn read_gyro_data(&mut self) -> Result<Sensor3DData, Error<E>> {
-        while !self.is_data_ready(SensorType::Gyroscope)? {
-            self.delay.delay_ms(1);
-        }
         self.read_sensor_data(SensorType::Gyroscope)
     }
 
@@ -170,6 +164,29 @@ where
 
     fn read_data<'a>(&mut self, data: &'a mut [u8]) -> Result<&'a [u8], Error<E>> {
         self.iface.read_data(data)
+    }
+
+    fn wait_for_data_ready(&mut self, sensor_type: SensorType) -> Result<(), Error<E>> {
+        const MAX_RETRIES: u8 = 100;
+        let mut retries = 0;
+
+        while !self.is_data_ready(sensor_type)? {
+            if retries >= MAX_RETRIES {
+                return Err(Error::Timeout);
+            }
+            self.delay.delay_ms(1);
+            retries += 1;
+        }
+
+        Ok(())
+    }
+
+    fn is_data_ready(&mut self, sensor_type: SensorType) -> Result<bool, Error<E>> {
+        let status = self.read_register(Register::STATUS)?;
+        match sensor_type {
+            SensorType::Accelerometer => Ok((status & 0b1000_0000) != 0), // Check bit 7 (drdy_acc)
+            SensorType::Gyroscope => Ok((status & 0b0100_0000) != 0),     // Check bit 6 (drdy_gyr)
+        }
     }
 }
 
