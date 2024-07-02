@@ -52,7 +52,6 @@ where
 {
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
-        //self.set_command_register(Register::CMD_SOFT_RESET)?;
         self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
@@ -63,9 +62,6 @@ where
             return Err(Error::InvalidDevice);
         }
 
-        //let mut reg_data = [0u8; 3];
-        //reg_data[0] = Register::CHIPID;
-        //self.read_data(&mut reg_data)?;
         let result = self.read_register(Register::CHIPID)?;
         if result != Register::BMI323_CHIP_ID {
             return Err(Error::InvalidDevice);
