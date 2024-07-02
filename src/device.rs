@@ -59,7 +59,7 @@ where
         //let mut reg_data = [0u8; 3];
         //reg_data[0] = 0x01; // sensor error conditins register
         let status = self.read_register(0x01)?;
-        if (status & 0b0000_0001) == 0 {
+        if (status & 0b0000_0001) != 0 {
             return Err(Error::InvalidDevice);
         }
 
