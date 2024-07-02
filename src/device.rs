@@ -9,6 +9,12 @@ impl<I2C, D> Bmi323<I2cInterface<I2C>, D>
 where
     D: DelayNs,
 {
+    /// Create a new BMI323 device instance
+    ///
+    /// # Arguments
+    ///
+    /// * `iface` - The communication interface
+    /// * `delay` - A delay provider
     pub fn new_with_i2c(i2c: I2C, address: u8, delay: D) -> Self {
         Bmi323 {
             iface: I2cInterface { i2c, address },
@@ -23,6 +29,12 @@ impl<SPI, D> Bmi323<SpiInterface<SPI>, D>
 where
     D: DelayNs,
 {
+    /// Create a new BMI323 device instance
+    ///
+    /// # Arguments
+    ///
+    /// * `iface` - The communication interface
+    /// * `delay` - A delay provider
     pub fn new_with_spi(spi: SPI, delay: D) -> Self {
         Bmi323 {
             iface: SpiInterface { spi },
@@ -38,28 +50,15 @@ where
     DI: ReadData<Error = Error<E>> + WriteData<Error = Error<E>>,
     D: DelayNs,
 {
-    /// Create a new BMI323 device instance
-    ///
-    /// # Arguments
-    ///
-    /// * `iface` - The communication interface (I2C or SPI)
-    /// * `delay` - A delay provider
-    pub fn new(iface: DI, delay: D) -> Self {
-        Self {
-            iface,
-            delay,
-            accel_range: AccelerometerRange::default(),
-            gyro_range: GyroscopeRange::default(),
-        }
-    }
-
     /// Initialize the device
     pub fn init(&mut self) -> Result<(), Error<E>> {
         self.write_register_16bit(Register::CMD, Register::CMD_SOFT_RESET)?;
         self.delay.delay_us(2000);
 
-        let result = self.read_register(0x01)?;
-        if result != 0 {
+        //let mut reg_data = [0u8; 3];
+        //reg_data[0] = 0x01; // sensor error conditins register
+        let status = self.read_register(0x01)?;
+        if (status & 0b0000_0001) != 0 {
             return Err(Error::InvalidDevice);
         }
 
@@ -80,6 +79,10 @@ where
         let reg_data = self.config_to_reg_data(config);
         self.write_register_16bit(Register::ACC_CONF, reg_data)?;
         self.accel_range = config.range;
+
+        // Wait for accelerometer data to be ready
+        self.wait_for_data_ready(SensorType::Accelerometer)?;
+
         Ok(())
     }
 
@@ -92,6 +95,10 @@ where
         let reg_data = self.config_to_reg_data(config);
         self.write_register_16bit(Register::GYR_CONF, reg_data)?;
         self.gyro_range = config.range;
+
+        // Wait for gyroscope data to be ready
+        self.wait_for_data_ready(SensorType::Gyroscope)?;
+
         Ok(())
     }
 
@@ -120,41 +127,27 @@ where
         })
     }
 
+    /// Read the LSB for the accelerometer
     pub fn read_accel_data(&mut self) -> Result<Sensor3DData, Error<E>> {
         self.read_sensor_data(SensorType::Accelerometer)
     }
 
+    /// Read the LSB for the gyroscope
     pub fn read_gyro_data(&mut self) -> Result<Sensor3DData, Error<E>> {
         self.read_sensor_data(SensorType::Gyroscope)
     }
 
+    /// Read the LSB for the accelerometer and return the scaled value as mps2
     pub fn read_accel_data_scaled(&mut self) -> Result<Sensor3DDataScaled, Error<E>> {
         let raw_data = self.read_accel_data()?;
         Ok(raw_data.to_mps2(self.accel_range.to_g())) // Assuming 16-bit width
     }
 
+    /// Read the LSB for the gyroscope and return the scaled value as dps
     pub fn read_gyro_data_scaled(&mut self) -> Result<Sensor3DDataScaled, Error<E>> {
         let raw_data = self.read_gyro_data()?;
         Ok(raw_data.to_dps(self.gyro_range.to_dps())) // Assuming 16-bit width
     }
-
-    /*
-    pub fn read_temperature(&mut self) -> Result<f32, Error<E>> {
-        let mut data = [0u8; 2];
-        self.read_data(&mut data)?;
-        let raw_temp = i16::from_le_bytes([data[0], data[1]]);
-        Ok((raw_temp as f32 / 512.0) + 23.0)
-    }
-
-    pub fn read_sensor_time(&mut self) -> Result<u32, Error<E>> {
-        let mut data = [0u8; 3];
-        self.read_data(&mut data)?;
-        Ok(u32::from_le_bytes([data[0], data[1], data[2], 0]))
-        }
-
-    fn write_register(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
-        self.iface.write_register(reg, value)
-        }*/
 
     fn write_register_16bit(&mut self, reg: u8, value: u16) -> Result<(), Error<E>> {
         let bytes = value.to_le_bytes();
@@ -167,6 +160,29 @@ where
 
     fn read_data<'a>(&mut self, data: &'a mut [u8]) -> Result<&'a [u8], Error<E>> {
         self.iface.read_data(data)
+    }
+
+    fn wait_for_data_ready(&mut self, sensor_type: SensorType) -> Result<(), Error<E>> {
+        const MAX_RETRIES: u8 = 100;
+        let mut retries = 0;
+
+        while !self.is_data_ready(sensor_type)? {
+            if retries >= MAX_RETRIES {
+                return Err(Error::Timeout);
+            }
+            self.delay.delay_ms(1);
+            retries += 1;
+        }
+
+        Ok(())
+    }
+
+    fn is_data_ready(&mut self, sensor_type: SensorType) -> Result<bool, Error<E>> {
+        let status = self.read_register(Register::STATUS)?;
+        match sensor_type {
+            SensorType::Accelerometer => Ok((status & 0b1000_0000) != 0), // Check bit 7 (drdy_acc)
+            SensorType::Gyroscope => Ok((status & 0b0100_0000) != 0),     // Check bit 6 (drdy_gyr)
+        }
     }
 }
 
