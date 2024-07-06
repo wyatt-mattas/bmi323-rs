@@ -4,15 +4,28 @@ version = "0.1.0"
 edition = "2021"
 readme = "README.md"
 authors = ["Wyatt Mattas <mattaswm@gmail.com>"]
-repository = "https://github.com/wyatt-mattas/bmi323_scratch/"
-keywords = ["inertial", "accelerometer", "gyroscope", "imu", "embedded-hal-driver"]
+repository = "https://github.com/wyatt-mattas/bmi323-rs/"
+keywords = [
+    "inertial",
+    "accelerometer",
+    "gyroscope",
+    "imu",
+    "embedded-hal-driver",
+]
 categories = ["embedded", "hardware-support", "no-std"]
+license = "Apache-2.0"
+documentation = "https://docs.rs/bmi323"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+include = [
+    "/**/*.rs",
+    "/Cargo.toml",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE-APACHE",
+]
 
 [dependencies]
 embedded-hal = "1.0.0"
-# micromath = "2.1.0"
 
 [dev-dependencies]
 embedded-hal-mock = { version = "0.11.1", features = ["eh1"] }

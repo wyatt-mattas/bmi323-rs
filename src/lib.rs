@@ -11,17 +11,21 @@ mod registers;
 pub use registers::Register;
 mod types;
 pub use types::{
-    AccelerometerPowerMode, AccelerometerRange, AverageNum, Bandwidth, Data, DataScaled, Error,
-    GyroscopePowerMode, GyroscopeRange, OutputDataRate, Sensor3DData, Sensor3DDataScaled, Status,
+    AccelerometerPowerMode, AccelerometerRange, AverageNum, Bandwidth, Error, GyroscopePowerMode,
+    GyroscopeRange, OutputDataRate, Sensor3DData, Sensor3DDataScaled,
 };
 mod sensor_data;
 pub use sensor_data::*;
 
-#[repr(C)]
+/// Main struct representing the BMI323 device
 pub struct Bmi323<DI, D> {
+    /// Communication interface (I2C or SPI)
     iface: DI,
+    /// Delay provider
     delay: D,
+    /// Current accelerometer range
     accel_range: AccelerometerRange,
+    /// Current gyroscope range
     gyro_range: GyroscopeRange,
 }
 
@@ -41,6 +45,7 @@ pub struct AccelConfig {
 }
 
 impl AccelConfig {
+    /// Create a new AccelConfigBuilder
     pub fn builder() -> AccelConfigBuilder {
         AccelConfigBuilder::default()
     }
@@ -55,6 +60,7 @@ pub struct AccelConfigBuilder {
     mode: Option<AccelerometerPowerMode>,
 }
 
+/// Builder for AccelConfig
 impl Default for AccelConfigBuilder {
     fn default() -> Self {
         Self {
@@ -68,31 +74,37 @@ impl Default for AccelConfigBuilder {
 }
 
 impl AccelConfigBuilder {
+    /// Set the output data rate
     pub fn odr(mut self, odr: OutputDataRate) -> Self {
         self.odr = Some(odr);
         self
     }
 
+    /// Set the measurement range
     pub fn range(mut self, range: AccelerometerRange) -> Self {
         self.range = Some(range);
         self
     }
 
+    /// Set the bandwidth
     pub fn bw(mut self, bw: Bandwidth) -> Self {
         self.bw = Some(bw);
         self
     }
 
+    /// Set the number of samples to average
     pub fn avg_num(mut self, avg_num: AverageNum) -> Self {
         self.avg_num = Some(avg_num);
         self
     }
 
+    /// Set the power mode
     pub fn mode(mut self, mode: AccelerometerPowerMode) -> Self {
         self.mode = Some(mode);
         self
     }
 
+    /// Build the AccelConfig
     pub fn build(self) -> AccelConfig {
         AccelConfig {
             odr: self.odr.unwrap_or(OutputDataRate::Odr100hz),
@@ -120,11 +132,13 @@ pub struct GyroConfig {
 }
 
 impl GyroConfig {
+    /// Create a new GyroConfigBuilder
     pub fn builder() -> GyroConfigBuilder {
         GyroConfigBuilder::default()
     }
 }
 
+/// Builder for GyroConfig
 #[derive(Debug, Clone, Copy)]
 pub struct GyroConfigBuilder {
     odr: Option<OutputDataRate>,
@@ -147,31 +161,37 @@ impl Default for GyroConfigBuilder {
 }
 
 impl GyroConfigBuilder {
+    /// Set the output data rate
     pub fn odr(mut self, odr: OutputDataRate) -> Self {
         self.odr = Some(odr);
         self
     }
 
+    /// Set the measurement range
     pub fn range(mut self, range: GyroscopeRange) -> Self {
         self.range = Some(range);
         self
     }
 
+    /// Set the bandwidth
     pub fn bw(mut self, bw: Bandwidth) -> Self {
         self.bw = Some(bw);
         self
     }
 
+    /// Set the power mode
     pub fn avg_num(mut self, avg_num: AverageNum) -> Self {
         self.avg_num = Some(avg_num);
         self
     }
 
+    /// Set the power mode
     pub fn mode(mut self, mode: GyroscopePowerMode) -> Self {
         self.mode = Some(mode);
         self
     }
 
+    /// Build the GyroConfig
     pub fn build(self) -> GyroConfig {
         GyroConfig {
             odr: self.odr.unwrap_or(OutputDataRate::Odr100hz),
@@ -184,6 +204,7 @@ impl GyroConfigBuilder {
 }
 
 impl From<AccelConfig> for u16 {
+    /// Convert AccelConfig to a 16-bit register value
     fn from(config: AccelConfig) -> Self {
         (config.odr as u16 & 0x0F)
             | ((config.range as u16 & 0x07) << 4)
@@ -194,6 +215,7 @@ impl From<AccelConfig> for u16 {
 }
 
 impl From<GyroConfig> for u16 {
+    /// Convert GyroConfig to a 16-bit register value
     fn from(config: GyroConfig) -> Self {
         (config.odr as u16 & 0x0F)
             | ((config.range as u16 & 0x07) << 4)

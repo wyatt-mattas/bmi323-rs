@@ -99,21 +99,6 @@ impl Default for GyroscopeRange {
     }
 }
 
-/// BMI323 status information
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Status {
-    /// Accelerometer data ready flag
-    pub accel_data_ready: bool,
-    /// Gyroscope data ready flag
-    pub gyro_data_ready: bool,
-    /// Non-volatile memory ready flag
-    pub nvm_ready: bool,
-    /// Fast offset compensation ready flag
-    pub foc_ready: bool,
-    /// Gyroscope self-test OK flag
-    pub gyro_self_test_ok: bool,
-}
-
 /// 3D sensor data (raw values)
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Sensor3DData {
@@ -125,17 +110,6 @@ pub struct Sensor3DData {
     pub z: i16,
 }
 
-/// Raw sensor data bundle
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Data {
-    /// Accelerometer data (if selected)
-    pub accel: Option<Sensor3DData>,
-    /// Gyroscope data (if selected)
-    pub gyro: Option<Sensor3DData>,
-    /// Sensor time (if selected)
-    pub time: Option<u32>,
-}
-
 /// Scaled 3D sensor data
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Sensor3DDataScaled {
@@ -145,17 +119,6 @@ pub struct Sensor3DDataScaled {
     pub y: f32,
     /// Z-axis scaled value
     pub z: f32,
-}
-
-/// Scaled sensor data bundle
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DataScaled {
-    /// Scaled accelerometer data (if selected)
-    pub accel: Option<Sensor3DDataScaled>,
-    /// Scaled gyroscope data (if selected)
-    pub gyro: Option<Sensor3DDataScaled>,
-    /// Sensor time (if selected)
-    pub time: Option<u32>,
 }
 
 /// Output data rates for sensors

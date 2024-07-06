@@ -64,7 +64,7 @@ fn main() {
 
 ## License
 
-This project is licensed under [INSERT YOUR CHOSEN LICENSE HERE].
+This project is licensed under Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Contributing
 
