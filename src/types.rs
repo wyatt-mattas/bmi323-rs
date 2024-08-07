@@ -1,5 +1,7 @@
 use core::fmt::Debug;
 
+use bytemuck::AnyBitPattern;
+
 /// Possible errors that can occur when interacting with the BMI323
 #[derive(Debug)]
 pub enum Error<E> {
@@ -100,7 +102,7 @@ impl Default for GyroscopeRange {
 }
 
 /// 3D sensor data (raw values)
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, AnyBitPattern)]
 pub struct Sensor3DData {
     /// X-axis value
     pub x: i16,

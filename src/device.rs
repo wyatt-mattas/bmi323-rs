@@ -199,6 +199,8 @@ mod tests {
     }
 
     mod sensor3d_data {
+        use bytemuck::checked::from_bytes;
+
         use super::*;
 
         #[test]
@@ -215,11 +217,39 @@ mod tests {
         }
 
         #[test]
+        fn can_decode_positive_array_anybitpattern(){
+            let data = &[0x01, 0x02, 0x03, 0x04, 0x05, 0x06];
+            let result= bytemuck::from_bytes::<Sensor3DData>(data);
+            assert_eq!(
+                result,
+                &Sensor3DData {
+                    x: 0x0201,
+                    y: 0x0403,
+                    z: 0x0605
+                }
+            );
+        }
+
+        #[test]
         fn can_decode_negative_array() {
             let result = get_sensor3d_data(&[0x0B, 0x86, 0x0B, 0x86, 0x0B, 0x86]);
             assert_eq!(
                 result,
                 Sensor3DData {
+                    x: -31221,
+                    y: -31221,
+                    z: -31221
+                }
+            );
+        }
+
+        #[test]
+        fn can_decode_negative_array_anybitpattern(){
+            let data = &[0x0B, 0x86, 0x0B, 0x86, 0x0B, 0x86];
+            let result = bytemuck::from_bytes::<Sensor3DData>(data);
+            assert_eq!(
+                result,
+                &Sensor3DData {
                     x: -31221,
                     y: -31221,
                     z: -31221

@@ -27,6 +27,7 @@ include = [
 ]
 
 [dependencies]
+bytemuck = { version = "1.16.3", features = ["derive"] }
 embedded-hal = "1.0.0"
 
 [dev-dependencies]
