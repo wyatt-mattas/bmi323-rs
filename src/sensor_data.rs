@@ -14,7 +14,7 @@ impl Sensor3DData {
     ///
     /// * `scale` - The full scale value
     /// * `half_scale` - Half of the full scale value
-    fn to_scaled(&self, scale: f32, half_scale: f32) -> Sensor3DDataScaled {
+    fn to_scaled(self, scale: f32, half_scale: f32) -> Sensor3DDataScaled {
         Sensor3DDataScaled {
             x: Self::lsb_to_scaled(self.x, scale, half_scale),
             y: Self::lsb_to_scaled(self.y, scale, half_scale),

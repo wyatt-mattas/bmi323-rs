@@ -139,25 +139,13 @@ impl GyroConfig {
 }
 
 /// Builder for GyroConfig
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct GyroConfigBuilder {
     odr: Option<OutputDataRate>,
     range: Option<GyroscopeRange>,
     bw: Option<Bandwidth>,
     avg_num: Option<AverageNum>,
     mode: Option<GyroscopePowerMode>,
-}
-
-impl Default for GyroConfigBuilder {
-    fn default() -> Self {
-        Self {
-            odr: None,
-            range: None,
-            bw: None,
-            avg_num: None,
-            mode: None,
-        }
-    }
 }
 
 impl GyroConfigBuilder {

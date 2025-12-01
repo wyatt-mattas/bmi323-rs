@@ -26,10 +26,11 @@ pub enum AccelerometerPowerMode {
     HighPerf = 0x07,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub enum AccelerometerRange {
     G2 = 0,
     G4 = 1,
+    #[default]
     G8 = 2,
     G16 = 3,
 }
@@ -42,12 +43,6 @@ impl AccelerometerRange {
             AccelerometerRange::G8 => 8.0,
             AccelerometerRange::G16 => 16.0,
         }
-    }
-}
-
-impl Default for AccelerometerRange {
-    fn default() -> Self {
-        AccelerometerRange::G8
     }
 }
 
@@ -67,7 +62,7 @@ pub enum GyroscopePowerMode {
 }
 
 /// Gyroscope measurement ranges
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub enum GyroscopeRange {
     /// ±125 degrees per second
     DPS125 = 0,
@@ -78,6 +73,7 @@ pub enum GyroscopeRange {
     /// ±1000 degrees per second
     DPS1000 = 3,
     /// ±2000 degrees per second
+    #[default]
     DPS2000 = 4,
 }
 
@@ -90,12 +86,6 @@ impl GyroscopeRange {
             GyroscopeRange::DPS1000 => 1000.0,
             GyroscopeRange::DPS2000 => 2000.0,
         }
-    }
-}
-
-impl Default for GyroscopeRange {
-    fn default() -> Self {
-        GyroscopeRange::DPS2000
     }
 }
 
