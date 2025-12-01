@@ -7,17 +7,22 @@ use embedded_hal_mock::eh1::i2c::{Mock as I2cMock, Transaction as I2cTransaction
 
 #[test]
 fn test_bmi323_init() {
-    let expectations = [
-        I2cTransaction::write(0x68, vec![0x7E, 0xAF, 0xDE]),
-        I2cTransaction::write_read(0x68, vec![0x00], vec![0x43]),
-    ];
+    // BMI323 returns dummy bytes first, actual data starts at offset 2
+    let mut status_response = vec![0x00; 128];
+    status_response[2] = 0x00; // No error bits set
 
+    let mut chip_id_response = vec![0x00; 128];
+    chip_id_response[2] = 0x43; // Chip ID at offset 2
+
+    let expectations = [
+        I2cTransaction::write(0x68, vec![0x7E, 0xAF, 0xDE]), // Soft reset
+        I2cTransaction::write_read(0x68, vec![0x01], status_response), // Read status register
+        I2cTransaction::write_read(0x68, vec![0x00], chip_id_response), // Read chip ID
+    ];
     let mut i2c = I2cMock::new(&expectations);
     let delay = MockDelay::new();
     let mut bmi323 = Bmi323::new_with_i2c(i2c.clone(), 0x68, delay);
-
     bmi323.init().unwrap();
-
     i2c.done();
 }
 
