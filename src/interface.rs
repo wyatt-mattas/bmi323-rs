@@ -79,9 +79,7 @@ pub trait ReadData {
 }
 
 impl<I2C, E> ReadData for I2cInterface<I2C>
-where
-    I2C: i2c::I2c<Error = E>,
-{
+where I2C: i2c::I2c<Error = E>{
     type Error = Error<E>;
     fn read_register(&mut self, register: u8) -> Result<u8, Self::Error> {
         let mut temp_data = [0u8; 128];
@@ -139,3 +137,5 @@ where
         Ok(&payload[1..])
     }
 }
+
+

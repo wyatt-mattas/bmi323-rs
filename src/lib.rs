@@ -1,12 +1,20 @@
 #![no_std]
+#[cfg(feature = "sync")]
+pub mod interface;
+#[cfg(feature = "sync")]
+pub mod device;
+#[cfg(feature = "async")]
+pub mod async_interface;
+#[cfg(feature = "async")]
+pub mod async_device;
+#[cfg(feature = "async")]
+pub use async_interface::*;
 
 /// BMI323 driver for Rust
 ///
 /// This module provides a high-level interface for interacting with the Bosch BMI323 IMU.
 /// It supports both I2C and SPI interfaces and allows for configuration of accelerometer
 /// and gyroscope settings.
-pub mod device;
-mod interface;
 mod registers;
 pub use registers::Register;
 mod types;
@@ -18,11 +26,22 @@ mod sensor_data;
 pub use sensor_data::*;
 
 /// Main struct representing the BMI323 device
+#[cfg(feature = "sync")]
 pub struct Bmi323<DI, D> {
     /// Communication interface (I2C or SPI)
     iface: DI,
     /// Delay provider
     delay: D,
+    /// Current accelerometer range
+    accel_range: AccelerometerRange,
+    /// Current gyroscope range
+    gyro_range: GyroscopeRange,
+}
+#[cfg(feature = "async")]
+pub struct AsyncBmi323<DI, Delay>{
+    /// Communication interface (I2C or SPI)
+    iface: DI,
+    delay: Delay,
     /// Current accelerometer range
     accel_range: AccelerometerRange,
     /// Current gyroscope range

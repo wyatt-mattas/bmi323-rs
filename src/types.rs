@@ -1,7 +1,10 @@
 use core::fmt::Debug;
+#[cfg(feature = "defmt")]
+use defmt::Format;
 
 /// Possible errors that can occur when interacting with the BMI323
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt", derive(Format))]
 pub enum Error<E> {
     /// Communication error
     Comm(E),

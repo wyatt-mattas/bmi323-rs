@@ -27,7 +27,15 @@ include = [
 ]
 
 [dependencies]
-embedded-hal = "1.0.0"
+embedded-hal = {version = "1.0.0", features = [], optional = true }
+embedded-hal-async = { version = "1.0.0", features = ["defmt-03",], optional = true }
+defmt = { version = "1.0.1", optional = true }
+
+[features]
+default = []
+sync = ["embedded-hal"]
+async = ["embedded-hal-async"]
+defmt = ["dep:defmt"]
 
 [dev-dependencies]
 embedded-hal-mock = { version = "0.11.1", features = ["eh1"] }
